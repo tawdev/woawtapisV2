@@ -57,6 +57,9 @@ export default function CollectionsPage() {
                                         src={getImageUrl(cat.image)}
                                         alt={cat.name}
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
+                                        }}
                                     />
                                     <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-stone-900/40 transition-colors duration-500" />
                                     <div className="absolute bottom-10 left-10 right-10 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">

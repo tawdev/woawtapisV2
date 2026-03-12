@@ -1,5 +1,6 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import Image from 'next/image';
 
 export default function AboutPage() {
     return (
@@ -26,18 +27,14 @@ export default function AboutPage() {
                                 Chez waootapis, nous croyons que le tapis est le cœur d&apos;un foyer. Depuis plus de 10 ans, nous parcourons les villages du Moyen Atlas pour dénicher les plus belles pièces et collaborer avec les meilleures tisseuses.
                             </p>
                         </div>
-                        <div className="bg-stone-200 aspect-[4/5] rounded shadow-2xl overflow-hidden">
-                            <div className="w-full h-full bg-stone-300 flex items-center justify-center text-stone-500 font-serif italic text-xl p-10 text-center">
-                                [Image de tissage traditionnel]
-                            </div>
+                        <div className="bg-stone-200 aspect-[4/5] rounded shadow-2xl overflow-hidden relative">
+                            <Image src="/images/hero-carpet.jpg" alt="Tissage traditionnel" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center flex-row-reverse">
-                        <div className="bg-stone-200 aspect-[4/5] rounded shadow-2xl overflow-hidden md:order-1">
-                            <div className="w-full h-full bg-stone-300 flex items-center justify-center text-stone-500 font-serif italic text-xl p-10 text-center">
-                                [Image du Showroom]
-                            </div>
+                        <div className="bg-stone-200 aspect-[4/5] rounded shadow-2xl overflow-hidden md:order-1 relative">
+                            <Image src="/images/placeholder.jpg" alt="Showroom waootapis" fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" />
                         </div>
                         <div className="space-y-6 md:order-2">
                             <h2 className="text-3xl font-serif font-bold text-stone-800">Engagement & Qualité</h2>

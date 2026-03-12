@@ -17,6 +17,7 @@ export default function Header({ transparent = false }: HeaderProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -98,6 +99,14 @@ export default function Header({ transparent = false }: HeaderProps) {
                                 </span>
                             )}
                         </Link>
+
+                        {/* Mobile Menu Toggle */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(true)}
+                            className="md:hidden hover:text-primary transition-colors hover:scale-110 duration-300 ml-2"
+                        >
+                            <Menu size={24} />
+                        </button>
                     </div>
                 </div>
             </header>
@@ -152,6 +161,56 @@ export default function Header({ transparent = false }: HeaderProps) {
                                     </button>
                                 ))}
                             </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Mobile Menu Overlay */}
+            <AnimatePresence>
+                {isMobileMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, x: '100%' }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: '100%' }}
+                        transition={{ type: 'tween', duration: 0.3 }}
+                        className="fixed inset-0 z-[70] bg-stone-900 text-white flex flex-col p-6"
+                    >
+                        <div className="flex justify-between items-center mb-12">
+                            <span className="text-2xl font-serif font-bold tracking-tighter">WOW TAPIS</span>
+                            <button
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="text-stone-400 hover:text-white transition-colors p-2"
+                            >
+                                <X size={32} />
+                            </button>
+                        </div>
+
+                        <nav className="flex flex-col gap-8 flex-1 overflow-y-auto mt-8">
+                            {['Accueil', 'À Propos', 'Nos Tapis', 'Collections', 'Sur Mesure', 'Journal', 'Contact'].map((item) => {
+                                const href = item === 'Accueil' ? '/' :
+                                    item === 'Nos Tapis' ? '/products' :
+                                        item === 'Collections' ? '/collections' :
+                                            item === 'Sur Mesure' ? '/products?type=sur_mesure' :
+                                                item === 'À Propos' ? '/a-propos' :
+                                                    item === 'Journal' ? '/blog' : '/contact';
+                                return (
+                                    <Link
+                                        key={item}
+                                        href={href}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="text-3xl font-serif tracking-widest hover:text-primary transition-colors"
+                                    >
+                                        {item}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+                        
+                        <div className="mt-auto pt-8 border-t border-stone-800">
+                            <p className="text-stone-500 text-xs uppercase tracking-widest mb-4">Contactez-nous</p>
+                            <a href="mailto:contact@waootapis.com" className="block text-white hover:text-primary mb-2 transition-colors">contact@waootapis.com</a>
+                            <a href="tel:+212524308038" className="block text-white hover:text-primary transition-colors">+212 5 24 30 80 38</a>
                         </div>
                     </motion.div>
                 )}
