@@ -1,0 +1,6 @@
+﻿[2026-03-11 11:04:32] local.ERROR: Undefined array key "exception" {"exception":"[object] (ErrorException(code: 0): Undefined array key \"exception\" at C:/xampp/htdocs/Tapis/backend/test_api.php:21)
+[stacktrace]
+#0 C:/xampp/htdocs/Tapis/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(258): Illuminate/Foundation/Bootstrap/HandleExceptions->handleError(2, 'Undefined array...', 'C://xampp//htdocs...', 21)
+#1 C:/xampp/htdocs/Tapis/backend/test_api.php(21): Illuminate/Foundation/Bootstrap/HandleExceptions->Illuminate/Foundation/Bootstrap/{closure}(2, 'Undefined array...', 'C://xampp//htdocs...', 21)
+#2 {main}
+"} 

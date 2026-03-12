@@ -1,0 +1,69 @@
+﻿composer : The "3.2" 
+constraint for 
+"filament/filament" 
+appears too strict and 
+will likely not match 
+what you want. See https:
+//getcomposer.org/constra
+ints
+At line:1 char:1
++ composer require 
+filament/filament:'^3.2' 
+-W --no-interaction 2>&1 
+|  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo       
+       : NotSpecified:   
+  (The "3.2" const...o   
+ rg/constraints:Strin    
+g) [], RemoteExcepti    
+on
+    + FullyQualifiedErro 
+   rId : NativeCommandE  
+  rror
+ 
+./composer.json has been 
+updated
+Running composer update 
+filament/filament 
+--with-all-dependencies
+Loading composer 
+repositories with 
+package information
+Updating dependencies
+Your requirements could 
+not be resolved to an 
+installable set of 
+packages.
+
+  Problem 1
+    - Root composer.json 
+requires 
+filament/filament 3.2 -> 
+satisfiable by filament/f
+ilament[v3.2.0].
+    - filament/filament 
+v3.2.0 requires 
+illuminate/console ^10.0 
+-> satisfiable by illumin
+ate/console[v10.0.0, 
+..., v10.49.0].
+    - illuminate/console[
+v10.0.0, ..., v10.49.0] 
+require 
+nunomaduro/termwind 
+^1.13 -> found nunomaduro
+/termwind[v1.13.0, ..., 
+v1.17.0] but these were 
+not loaded, likely 
+because it conflicts 
+with another require.
+
+
+Installation failed, 
+reverting 
+./composer.json and 
+./composer.lock to their 
+original content.
