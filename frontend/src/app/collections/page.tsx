@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { categoryService, getImageUrl } from '@/services/api';
@@ -30,9 +31,9 @@ export default function CollectionsPage() {
 
             <section className="bg-stone-900 py-32 text-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-stone-900/50 z-10" />
-                <img src="/images/hero-carpet.jpg" className="absolute inset-0 w-full h-full object-cover opacity-30 scale-110 animate-slow-zoom" />
+                <Image src="/images/hero-carpet.jpg" alt="Collections hero background" fill priority sizes="100vw" className="object-cover opacity-30 scale-110 animate-slow-zoom" />
                 <div className="container mx-auto px-4 relative z-20 text-center">
-                    <h2 className="text-primary uppercase tracking-[0.5em] text-[10px] font-bold mb-6">Inspiration & Matières</h2>
+                    <p className="text-primary uppercase tracking-[0.5em] text-[10px] font-bold mb-6">Inspiration & Matières</p>
                     <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8 italic">Nos Collections</h1>
                     <div className="h-1 w-24 bg-primary mx-auto mb-8" />
                     <p className="text-stone-300 max-w-xl mx-auto font-light leading-relaxed">
@@ -53,12 +54,16 @@ export default function CollectionsPage() {
                         {categories.map((cat) => (
                             <Link key={cat.id} href={`/products?category=${cat.id}`} className="group block">
                                 <div className="relative aspect-[3/4] overflow-hidden rounded-sm mb-6 bg-stone-200">
-                                    <img
+                                    <Image
                                         src={getImageUrl(cat.image)}
                                         alt={cat.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, 33vw"
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                                         onError={(e) => {
-                                            (e.target as HTMLImageElement).src = '/images/placeholder.jpg';
+                                            const target = e.target as HTMLImageElement;
+                                            target.srcset = '';
+                                            target.src = '/images/placeholder.jpg';
                                         }}
                                     />
                                     <div className="absolute inset-0 bg-stone-900/20 group-hover:bg-stone-900/40 transition-colors duration-500" />
@@ -67,7 +72,7 @@ export default function CollectionsPage() {
                                         <div className="h-1 w-12 bg-primary transition-all duration-500 group-hover:w-full" />
                                     </div>
                                 </div>
-                                <p className="text-stone-500 font-medium text-center line-clamp-2 px-4">
+                                <p className="text-stone-600 font-medium text-center line-clamp-2 px-4">
                                     {cat.description || 'Découvrez notre sélection exclusive.'}
                                 </p>
                             </Link>

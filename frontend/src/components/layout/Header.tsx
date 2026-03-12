@@ -46,7 +46,7 @@ export default function Header({ transparent = false }: HeaderProps) {
             : 'bg-white/95 backdrop-blur-xl py-4 border-b border-stone-100 shadow-sm';
 
     const textColor = isTransparentMode ? 'text-white' : 'text-stone-900';
-    const navTextColor = isTransparentMode ? 'text-white/80 hover:text-white' : 'text-stone-600 hover:text-primary';
+    const navTextColor = isTransparentMode ? 'text-white/90 hover:text-white' : 'text-stone-700 hover:text-primary';
 
     return (
         <>
@@ -71,7 +71,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                                 <Link
                                     key={item}
                                     href={href}
-                                    className={`relative text-[11px] uppercase tracking-[0.2em] font-bold transition-all duration-500 group ${navTextColor}`}
+                                    className={`relative text-[11px] uppercase tracking-[0.2em] font-bold transition-all duration-500 group py-2 ${navTextColor}`}
                                 >
                                     {item}
                                     <span className={`absolute -bottom-1 left-0 w-0 h-[1px] bg-primary transition-all duration-500 group-hover:w-full`} />
@@ -84,15 +84,16 @@ export default function Header({ transparent = false }: HeaderProps) {
                     <div className={`flex items-center gap-6 transition-colors duration-500 ${textColor}`}>
                         <button
                             onClick={() => setIsSearchOpen(true)}
-                            className="hover:text-primary transition-colors hover:scale-110 duration-300"
+                            className="p-2 hover:text-primary transition-colors hover:scale-110 duration-300"
+                            aria-label="Ouvrir la recherche"
                         >
                             <Search size={20} />
                         </button>
 
 
 
-                        <Link href="/cart" className={`relative group p-2 rounded-full transition-all duration-500 hover:scale-110 ${isTransparentMode ? 'bg-white/10 hover:bg-white/20' : 'bg-stone-100 hover:bg-stone-900'}`}>
-                            <ShoppingCart size={20} className={`transition-colors ${!isTransparentMode ? 'group-hover:text-white' : ''}`} />
+                        <Link href="/cart" className={`relative group p-2 rounded-full transition-all duration-500 hover:scale-110 ${isTransparentMode ? 'bg-white/10 hover:bg-white/20' : 'bg-stone-100 hover:bg-stone-900'}`} aria-label="Voir le panier">
+                            <ShoppingCart size={20} className={`transition-colors ${!isTransparentMode ? 'group-hover:text-white' : ''}`} aria-hidden="true" />
                             {cartCount > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold animate-in zoom-in duration-300">
                                     {cartCount}
@@ -103,7 +104,8 @@ export default function Header({ transparent = false }: HeaderProps) {
                         {/* Mobile Menu Toggle */}
                         <button
                             onClick={() => setIsMobileMenuOpen(true)}
-                            className="md:hidden hover:text-primary transition-colors hover:scale-110 duration-300 ml-2"
+                            className="md:hidden p-2 hover:text-primary transition-colors hover:scale-110 duration-300 ml-2"
+                            aria-label="Ouvrir le menu principal"
                         >
                             <Menu size={24} />
                         </button>
@@ -123,6 +125,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                         <button
                             onClick={() => setIsSearchOpen(false)}
                             className="absolute top-10 right-10 text-stone-400 hover:text-white transition-colors"
+                            aria-label="Fermer la recherche"
                         >
                             <X size={32} />
                         </button>
@@ -141,6 +144,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                                 <button
                                     type="submit"
                                     className="absolute right-0 bottom-8 text-primary hover:scale-110 transition-transform"
+                                    aria-label="Lancer la recherche"
                                 >
                                     <Search size={40} />
                                 </button>
@@ -181,6 +185,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                             <button
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className="text-stone-400 hover:text-white transition-colors p-2"
+                                aria-label="Fermer le menu principal"
                             >
                                 <X size={32} />
                             </button>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShoppingCart, Eye, Share2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { getImageUrl } from '@/services/api';
@@ -65,10 +66,17 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="group relative bg-white border border-stone-100 overflow-hidden transition-all duration-1000 hover:shadow-2xl hover:shadow-stone-200/50">
             {/* Image Container with Luxury Overlay */}
             <Link href={`/product/${product.slug}`} className="block aspect-[4/5] overflow-hidden bg-stone-100 relative">
-                <img
+                <Image
                     src={primaryImage}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.srcset = '';
+                        target.src = '/images/placeholder.jpg';
+                    }}
                 />
 
                 {/* Brand Overlay on Hover */}
