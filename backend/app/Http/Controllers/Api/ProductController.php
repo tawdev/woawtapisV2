@@ -33,6 +33,22 @@ class ProductController extends Controller
             });
         }
 
+        if ($request->filled('colors')) {
+            $colorList = explode(',', $request->input('colors'));
+            $query->where(function ($q) use ($colorList) {
+                foreach ($colorList as $color) {
+                    $color = trim($color);
+                    $q->orWhere('color', 'like', "%{$color}%");
+                }
+            });
+        }
+
+        // Legacy single color param support
+        if ($request->filled('color') && !$request->filled('colors')) {
+            $color = $request->input('color');
+            $query->where('color', 'like', "%{$color}%");
+        }
+
         return $query->paginate($request->input('per_page', 12));
     }
 

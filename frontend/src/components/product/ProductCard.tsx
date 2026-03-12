@@ -7,6 +7,14 @@ import { useCart } from '@/context/CartContext';
 import { getImageUrl } from '@/services/api';
 import SurMesureModal from './SurMesureModal';
 
+const COLOR_MAP: Record<string, string> = {
+    'Beige': '#F5F5DC', 'Blanc': '#E8E8E8', 'Bleu': '#3B82F6',
+    'Vert': '#10B981', 'Gris': '#9CA3AF', 'Jaune': '#FBBF24',
+    'Marron': '#78350F', 'Noir': '#171717', 'Orange': '#F97316',
+    'Rose': '#EC4899', 'Rouge': '#EF4444', 'Violet': '#8B5CF6',
+    'Turquoise': '#14B8A6',
+};
+
 interface ProductCardProps {
     product: {
         id: number;
@@ -16,7 +24,8 @@ interface ProductCardProps {
         sale_price?: string | number;
         category?: { name: string };
         images?: { image_path: string }[];
-        type?: { name: string }; // Added type property
+        type?: { name: string };
+        color?: string[] | any[];
         max_longueur?: number;
         max_largeur?: number;
     };
@@ -148,6 +157,28 @@ export default function ProductCard({ product }: ProductCardProps) {
                         </span>
                     )}
                 </div>
+
+                {/* Color Swatches */}
+                {product.color && product.color.length > 0 && (
+                    <div className="flex items-center justify-center gap-2 pt-2">
+                        {product.color.slice(0, 6).map((c: any, i: number) => {
+                            const colorName = typeof c === 'string' ? c : (c?.name || '');
+                            const hex = COLOR_MAP[colorName];
+                            if (!hex || !colorName) return null;
+                            return (
+                                <span
+                                    key={i}
+                                    title={colorName}
+                                    className="w-4 h-4 rounded-full border border-stone-200 shadow-sm"
+                                    style={{ backgroundColor: hex }}
+                                />
+                            );
+                        })}
+                        {product.color.length > 6 && (
+                            <span className="text-[9px] text-stone-400 font-bold">+{product.color.length - 6}</span>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
