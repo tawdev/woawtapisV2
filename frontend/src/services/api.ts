@@ -58,3 +58,7 @@ export const blogService = {
   getAll: (page = 1) => fetchApi(`/blog?page=${page}`),
   getBySlug: (slug: string) => fetchApi(`/blog/${slug}`),
 };
+
+export const searchService = {
+  getSuggestions: (query: string) => fetchApi(`/search/suggestions?q=${encodeURIComponent(query)}`),
+};

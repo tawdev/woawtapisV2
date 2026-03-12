@@ -1,11 +1,10 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, Search, Menu, User, X } from 'lucide-react';
+import { ShoppingCart, Search, Menu, User, X, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { searchService } from '@/services/api';
 
 interface HeaderProps {
     transparent?: boolean;
@@ -18,6 +17,9 @@ export default function Header({ transparent = false }: HeaderProps) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -27,6 +29,31 @@ export default function Header({ transparent = false }: HeaderProps) {
             window.removeEventListener('scroll', handleScroll);
         };
     }, []);
+
+    // Autocomplete Logic
+    useEffect(() => {
+        const fetchSuggestions = async () => {
+            if (searchQuery.trim().length < 1) {
+                setSuggestions([]);
+                setShowSuggestions(false);
+                return;
+            }
+
+            setIsLoadingSuggestions(true);
+            try {
+                const data = await searchService.getSuggestions(searchQuery);
+                setSuggestions(data);
+                setShowSuggestions(data.length > 0);
+            } catch (error) {
+                console.error("Autocomplete error:", error);
+            } finally {
+                setIsLoadingSuggestions(false);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchSuggestions, 150);
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,7 +87,7 @@ export default function Header({ transparent = false }: HeaderProps) {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-12">
-                        {['Accueil', 'À Propos', 'Nos Tapis', 'Collections', 'Sur Mesure', 'Journal', 'Contact'].map((item) => {
+                        {['Accueil', 'À Propos', 'Nos Tapis', 'Collections', 'Sur Mesure', 'Journal', 'Contact'].map((item: string) => {
                             const href = item === 'Accueil' ? '/' :
                                 item === 'Nos Tapis' ? '/products' :
                                     item === 'Collections' ? '/collections' :
@@ -132,7 +159,7 @@ export default function Header({ transparent = false }: HeaderProps) {
 
                         <div className="w-full max-w-4xl text-center">
                             <h2 className="text-primary uppercase tracking-[0.5em] text-[10px] font-bold mb-12">Quelle pièce cherchez-vous ?</h2>
-                            <form onSubmit={handleSearch} className="relative">
+                             <form onSubmit={handleSearch} className="relative">
                                 <input
                                     autoFocus
                                     type="text"
@@ -141,17 +168,52 @@ export default function Header({ transparent = false }: HeaderProps) {
                                     placeholder="Rechercher un tapis, un motif, une matière..."
                                     className="w-full bg-transparent border-b-2 border-primary/30 py-8 px-4 text-4xl md:text-6xl font-serif text-white placeholder:text-stone-700 focus:outline-none focus:border-primary transition-colors"
                                 />
-                                <button
-                                    type="submit"
-                                    className="absolute right-0 bottom-8 text-primary hover:scale-110 transition-transform"
-                                    aria-label="Lancer la recherche"
-                                >
-                                    <Search size={40} />
-                                </button>
+                                <div className="absolute right-0 bottom-8 flex items-center gap-4">
+                                    {isLoadingSuggestions && <Loader2 size={32} className="text-primary animate-spin" />}
+                                    <button
+                                        type="submit"
+                                        className="text-primary hover:scale-110 transition-transform"
+                                        aria-label="Lancer la recherche"
+                                    >
+                                        <Search size={40} />
+                                    </button>
+                                </div>
+                                
+                                {/* Suggestions Dropdown */}
+                                <AnimatePresence>
+                                    {showSuggestions && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 10 }}
+                                            className="absolute left-0 right-0 top-full mt-4 bg-stone-800/90 backdrop-blur-md rounded-sm border border-white/5 shadow-2xl overflow-hidden z-[100] max-h-[60vh] overflow-y-auto"
+                                        >
+                                            <div className="p-4 flex flex-col divide-y divide-white/5">
+                                                {suggestions.map((item) => (
+                                                    <button
+                                                        key={item.id}
+                                                        onClick={() => {
+                                                            router.push(item.url);
+                                                            setIsSearchOpen(false);
+                                                            setSearchQuery('');
+                                                        }}
+                                                        className="group flex items-center justify-between p-6 hover:bg-primary transition-colors text-left"
+                                                    >
+                                                        <div className="flex flex-col">
+                                                            <span className="text-white font-serif text-2xl group-hover:text-stone-900 transition-colors">{item.name}</span>
+                                                            <span className="text-stone-400 text-[10px] uppercase tracking-widest group-hover:text-stone-900/60 transition-colors mt-1">{item.type}</span>
+                                                        </div>
+                                                        <Search size={20} className="text-primary group-hover:text-stone-900 transition-colors" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </form>
                             <div className="mt-12 flex flex-wrap justify-center gap-6">
                                 <span className="text-stone-500 text-[10px] uppercase tracking-widest">Suggestions :</span>
-                                {['Persan', 'Moderne', 'Laine', 'Berbère'].map((tag) => (
+                                {['Persan', 'Moderne', 'Laine', 'Berbère'].map((tag: string) => (
                                     <button
                                         key={tag}
                                         onClick={() => {
@@ -192,7 +254,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                         </div>
 
                         <nav className="flex flex-col gap-8 flex-1 overflow-y-auto mt-8">
-                            {['Accueil', 'À Propos', 'Nos Tapis', 'Collections', 'Sur Mesure', 'Journal', 'Contact'].map((item) => {
+                            {['Accueil', 'À Propos', 'Nos Tapis', 'Collections', 'Sur Mesure', 'Journal', 'Contact'].map((item: string) => {
                                 const href = item === 'Accueil' ? '/' :
                                     item === 'Nos Tapis' ? '/products' :
                                         item === 'Collections' ? '/collections' :

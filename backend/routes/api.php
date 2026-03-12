@@ -14,8 +14,10 @@ use App\Http\Controllers\Api\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\Admin\AdminOrderController;
 use App\Http\Controllers\Api\Admin\AdminMessageController;
 use App\Http\Controllers\Api\Admin\AdminStatsController;
+use App\Http\Controllers\Api\SearchController;
 
 Route::get('/products', [ProductController::class, 'index']);
+Route::get('/search/suggestions', [SearchController::class, 'suggestions']);
 Route::get('/products/{product:slug}', [ProductController::class, 'show']);
 Route::get('/featured-products', [ProductController::class, 'featured']);
 Route::get('/best-sellers', [ProductController::class, 'bestSellers']);
