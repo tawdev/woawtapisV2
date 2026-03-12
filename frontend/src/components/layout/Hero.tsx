@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Hero() {
     return (
@@ -6,19 +7,22 @@ export default function Hero() {
             {/* Background with advanced overlay */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-900/40 to-transparent z-10" />
-                <img
+                <Image
                     src="/images/hero-carpet.jpg"
                     alt="Tapis de luxe"
-                    className="w-full h-full object-cover scale-105 animate-slow-zoom"
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover scale-105 animate-slow-zoom"
                 />
             </div>
 
             <div className="container mx-auto px-4 relative z-20 text-white">
                 <div className="max-w-4xl space-y-12">
                     <div className="space-y-4 overflow-hidden">
-                        <h2 className="text-primary uppercase tracking-[0.5em] text-[10px] md:text-xs font-bold animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <p className="text-primary uppercase tracking-[0.5em] text-[10px] md:text-xs font-bold animate-in fade-in slide-in-from-bottom-4 duration-700">
                             Héritage & Artisanat
-                        </h2>
+                        </p>
                         <h1 className="text-6xl md:text-8xl xl:text-9xl font-serif font-bold leading-[0.9] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
                             L&apos;Or de <br />
                             <span className="text-primary italic font-light italic-reveal">vos Sols</span>

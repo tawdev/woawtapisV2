@@ -5,6 +5,7 @@ import Header from '@/components/layout/Header';
 import Hero from '@/components/layout/Hero';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/product/ProductCard';
+import Image from 'next/image';
 import { productService, contactService } from '@/services/api';
 
 import { Truck, Wrench, Gem, Send, Loader2, CheckCircle2 } from 'lucide-react';
@@ -82,9 +83,11 @@ export default function Home() {
               <div className="relative group">
                 <div className="absolute -inset-4 bg-primary/5 rounded-sm blur-2xl group-hover:bg-primary/10 transition-colors duration-1000" />
                 <div className="relative aspect-[4/5] overflow-hidden rounded-sm shadow-2xl">
-                  <img 
+                  <Image 
                     src="/images/hero-carpet.jpg" 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" 
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110" 
                     alt="Artisanat TAW 10"
                   />
                   <div className="absolute inset-0 bg-stone-900/10 group-hover:bg-stone-900/0 transition-colors duration-700" />
@@ -97,8 +100,8 @@ export default function Home() {
               
               <div className="space-y-12">
                 <div className="space-y-6">
-                  <h3 className="text-primary uppercase tracking-[0.3em] text-[10px] font-bold">Notre Maison</h3>
-                  <h2 className="text-5xl md:text-6xl font-serif font-bold italic leading-tight">Plus qu&apos;un Tapis, <br />un Héritage.</h2>
+                  <h2 className="text-primary uppercase tracking-[0.3em] text-[10px] font-bold">Notre Maison</h2>
+                  <p className="text-5xl md:text-6xl font-serif font-bold italic leading-tight">Plus qu&apos;un Tapis, <br />un Héritage.</p>
                 </div>
                 
                 <div className="space-y-8 text-lg font-light text-stone-500 leading-relaxed">
@@ -125,10 +128,10 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
               <div className="space-y-4">
-                <h3 className="text-primary uppercase tracking-[0.2em] text-sm font-bold">Sélection Premium</h3>
-                <h2 className="text-4xl md:text-5xl font-serif font-bold">Nos Pièces Maîtresses</h2>
+                <h2 className="text-primary uppercase tracking-[0.2em] text-sm font-bold">Sélection Premium</h2>
+                <h3 className="text-4xl md:text-5xl font-serif font-bold">Nos Pièces Maîtresses</h3>
               </div>
-              <a href="/products" className="text-stone-800 font-bold border-b-2 border-stone-800 pb-1 hover:text-primary hover:border-primary transition-all">
+              <a href="/products" className="text-stone-800 font-bold border-b-2 border-stone-800 pb-2 hover:text-primary hover:border-primary transition-all min-h-[44px] flex items-center">
                 Voir tout le catalogue
               </a>
             </div>
@@ -159,8 +162,8 @@ export default function Home() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
               <div className="space-y-12">
                 <div className="space-y-6">
-                  <h3 className="text-primary uppercase tracking-[0.4em] text-[10px] font-bold">Conciergerie</h3>
-                  <h2 className="text-5xl md:text-6xl font-serif font-bold italic leading-tight">Un projet d&apos;exception ?</h2>
+                  <h2 className="text-primary uppercase tracking-[0.4em] text-[10px] font-bold">Conciergerie</h2>
+                  <h3 className="text-5xl md:text-6xl font-serif font-bold italic leading-tight">Un projet d&apos;exception ?</h3>
                   <div className="h-1 w-20 bg-primary" />
                 </div>
                 
