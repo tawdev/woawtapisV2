@@ -1,0 +1,56 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main # Change this to your main branch (e.g., master) if different
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_PORT }} # Typically 22
+          script: |
+            # Navigate to the project directory (Change this to your actual path)
+            cd /path/to/your/project/woawTapis
+            
+            # Pull the latest changes from the repository
+            git pull origin main
+            
+            # ---------------------------------------------------
+            # BACKEND DEPLOYMENT (Laravel / NestJS / etc.)
+            # ---------------------------------------------------
+            # Example for Laravel:
+            # cd backend
+            # composer install --no-dev --optimize-autoloader
+            # php artisan migrate --force
+            # php artisan config:cache
+            # cd ..
+            
+            # Example for Node/NestJS:
+            # cd backend
+            # npm install
+            # npm run build
+            # pm2 restart backend
+            # cd ..
+            
+            # ---------------------------------------------------
+            # FRONTEND DEPLOYMENT (Next.js / React)
+            # ---------------------------------------------------
+            # cd frontend
+            # npm install
+            # npm run build
+            # pm2 restart frontend
+            # cd ..
+            
+            echo "Deployment successful!"
