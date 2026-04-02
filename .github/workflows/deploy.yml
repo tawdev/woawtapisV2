@@ -21,36 +21,32 @@ jobs:
           key: ${{ secrets.VPS_PRIVATE_KEY }}
           port: ${{ secrets.VPS_PORT }} # Typically 22
           script: |
-            # Navigate to the project directory (Change this to your actual path)
-            cd /path/to/your/project/woawTapis
+            # Navigate to the project directory (Change this path if your folder is named differently on Hostinger)
+            cd /var/www/woawTapis || cd ~/woawtapisV2 || cd ~/public_html/woawTapis
             
             # Pull the latest changes from the repository
             git pull origin main
             
             # ---------------------------------------------------
-            # BACKEND DEPLOYMENT (Laravel / NestJS / etc.)
+            # BACKEND DEPLOYMENT (Laravel)
             # ---------------------------------------------------
-            # Example for Laravel:
-            # cd backend
-            # composer install --no-dev --optimize-autoloader
-            # php artisan migrate --force
-            # php artisan config:cache
-            # cd ..
-            
-            # Example for Node/NestJS:
-            # cd backend
-            # npm install
-            # npm run build
-            # pm2 restart backend
-            # cd ..
+            echo "Deploying Backend..."
+            cd backend
+            composer install --no-dev --optimize-autoloader --no-interaction
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            cd ..
             
             # ---------------------------------------------------
-            # FRONTEND DEPLOYMENT (Next.js / React)
+            # FRONTEND DEPLOYMENT (Next.js)
             # ---------------------------------------------------
-            # cd frontend
-            # npm install
-            # npm run build
-            # pm2 restart frontend
-            # cd ..
+            echo "Deploying Frontend..."
+            cd frontend
+            npm install
+            npm run build
+            # Restart the PM2 process (assuming it's named 'frontend')
+            pm2 restart frontend || pm2 restart all
             
             echo "Deployment successful!"
