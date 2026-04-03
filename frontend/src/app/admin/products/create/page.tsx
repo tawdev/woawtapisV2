@@ -61,6 +61,9 @@ export default function CreateProductPage() {
         sub_category: '',
     });
 
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string>('');
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -116,12 +119,34 @@ export default function CreateProductPage() {
         setError('');
 
         try {
-            await adminService.createProduct(formData);
+            // 1. Create product
+            const response = await adminService.createProduct(formData);
+            const productId = response.data.id;
+
+            // 2. Upload image if selected
+            if (imageFile && productId) {
+                const imageFormData = new FormData();
+                imageFormData.append('image_file', imageFile);
+                await adminService.addProductImage(productId, imageFormData);
+            }
+
             router.push('/admin/products');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Une erreur est survenue lors de la création.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -358,6 +383,48 @@ export default function CreateProductPage() {
                                     <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 transition-colors">Tapis de Lit / Descente</span>
                                 </label>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl border border-stone-200 space-y-6">
+                        <h2 className="text-lg font-bold text-stone-900 border-b border-stone-100 pb-4">Image Principale</h2>
+                        
+                        <div className="space-y-4">
+                            {imagePreview ? (
+                                <div className="relative aspect-square rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
+                                    <img 
+                                        src={imagePreview} 
+                                        alt="Preview" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setImageFile(null);
+                                            setImagePreview('');
+                                        }}
+                                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <label className="flex flex-col items-center justify-center aspect-square rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50 hover:bg-stone-100 hover:border-stone-300 transition-all cursor-pointer group">
+                                    <div className="flex flex-col items-center gap-2 text-stone-500 group-hover:text-stone-700">
+                                        <div className="p-3 bg-white rounded-xl shadow-sm border border-stone-100 group-hover:scale-110 transition-transform">
+                                            <Save className="w-6 h-6 text-stone-400" />
+                                        </div>
+                                        <span className="text-xs font-bold uppercase tracking-widest mt-2">Ajouter une image</span>
+                                        <span className="text-[10px] opacity-60">JPG, PNG ou WebP seulement</span>
+                                    </div>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={handleImageChange} 
+                                        className="hidden" 
+                                    />
+                                </label>
+                            )}
                         </div>
                     </div>
 
