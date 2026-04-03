@@ -24,49 +24,30 @@ jobs:
             # ---------------------------------------------------
             # Find the project directory
             # ---------------------------------------------------
-            PROJECT_DIR=""
-            for dir in \
-              "$HOME/woawtapisV2" \
-              "$HOME/woawTapis" \
-              "/var/www/woawTapis" \
-              "/var/www/woawtapisV2" \
-              "$HOME/public_html/woawTapis"; do
-              if [ -d "$dir/.git" ]; then
-                PROJECT_DIR="$dir"
-                break
-              fi
-            done
-
-            if [ -z "$PROJECT_DIR" ]; then
-              echo "ERROR: Could not find project directory!"
-              exit 1
-            fi
-
-            echo "Found project at: $PROJECT_DIR"
-            cd "$PROJECT_DIR"
+            cd /var/www/woawTapis
 
             # ---------------------------------------------------
             # Pull latest changes
             # ---------------------------------------------------
-            git pull origin main
+            git pull -r origin main
 
             # ---------------------------------------------------
             # BACKEND DEPLOYMENT (Laravel)
             # ---------------------------------------------------
             echo "Deploying Backend (Laravel)..."
-            cd "$PROJECT_DIR/backend"
+            cd /var/www/woawTapis/backend
             composer install --no-dev --optimize-autoloader --no-interaction
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
-            cd "$PROJECT_DIR"
+            cd /var/www/woawTapis
 
             # ---------------------------------------------------
             # FRONTEND DEPLOYMENT (Next.js)
             # ---------------------------------------------------
             echo "Deploying Frontend (Next.js)..."
-            cd "$PROJECT_DIR/frontend"
+            cd /var/www/woawTapis/frontend
             npm install --legacy-peer-deps
             npm run build
             pm2 restart wowtapis-front || pm2 start npm --name wowtapis-front -- start
