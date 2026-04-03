@@ -251,59 +251,82 @@ export default function AdminDashboard() {
                 <div className="bg-white rounded-[3rem] p-10 border border-stone-100 shadow-xl overflow-hidden relative group">
                     <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
                     
-                    {/* Visual Line Graph (CSS/SVG) */}
-                    <div className="relative h-80 flex items-end justify-between gap-2 px-12 pt-20 border-b border-stone-50 pb-8">
-                        <svg className="absolute inset-0 w-full h-full p-12 pointer-events-none opacity-20" preserveAspectRatio="none">
+                    {/* Visual Line Graph (SVG) */}
+                    <div className="relative h-96 flex items-end justify-between px-4 sm:px-12 pt-20 border-b border-stone-50 pb-12">
+                        {/* Background Separators */}
+                        <div className="absolute inset-x-0 bottom-12 top-20 flex justify-between px-4 sm:px-12 pointer-events-none">
+                            {stats?.monthly_sales?.map((_: any, i: number) => (
+                                <div key={i} className="h-full w-px border-l border-dashed border-stone-100 relative">
+                                    {i === 0 && <div className="absolute inset-y-0 -left-px w-px bg-gradient-to-b from-transparent via-stone-200 to-transparent" />}
+                                </div>
+                            ))}
+                        </div>
+
+                        <svg className="absolute inset-0 w-full h-full p-4 sm:p-12 pointer-events-none overflow-visible" viewBox="0 0 1000 100" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.2" />
+                                    <stop offset="50%" stopColor="#D4AF37" stopOpacity="1" />
+                                    <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.2" />
+                                </linearGradient>
+                            </defs>
                             <polyline
                                 fill="none"
-                                stroke="#D4AF37"
+                                stroke="url(#lineGradient)"
                                 strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 points={stats?.monthly_sales?.map((m: any, i: number) => {
-                                    const maxSold = Math.max(...stats.monthly_sales.map((sm: any) => sm.best_seller?.sold || 1));
-                                    const x = (i / (stats.monthly_sales.length - 1)) * 100;
-                                    const y = 100 - ((m.best_seller?.sold || 0) / (maxSold || 1)) * 80;
-                                    return `${x}% ${y}%`;
-                                }).join(', ')}
-                                className="drop-shadow-lg"
+                                    const maxSold = Math.max(...stats.monthly_sales.map((sm: any) => sm.best_seller?.sold || 1)) || 1;
+                                    const x = (i / (stats.monthly_sales.length - 1)) * 1000;
+                                    const y = 90 - ((m.best_seller?.sold || 0) / maxSold) * 80;
+                                    return `${x},${y}`;
+                                }).join(' ')}
+                                className="drop-shadow-xl transition-all duration-1000"
                             />
                         </svg>
 
                         {stats?.monthly_sales?.map((monthData: any, idx: number) => {
                             const maxSold = Math.max(...stats.monthly_sales.map((sm: any) => sm.best_seller?.sold || 1)) || 1;
-                            const percentage = ((monthData.best_seller?.sold || 0) / maxSold) * 100;
+                            const percentage = ((monthData.best_seller?.sold || 0) / maxSold) * 80;
                             
                             return (
                                 <div key={idx} className="flex-1 flex flex-col items-center group relative z-10 h-full justify-end">
                                     {/* Product Bubble on Graph */}
                                     <div 
-                                        className="absolute transition-all duration-700 ease-out flex flex-col items-center"
-                                        style={{ bottom: `${Math.max(percentage, 5)}%` }}
+                                        className="absolute transition-all duration-1000 ease-in-out flex flex-col items-center"
+                                        style={{ bottom: `${percentage + 10}%` }}
                                     >
-                                        <div className="mb-4 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 scale-50 group-hover:scale-100">
-                                            <div className="w-20 h-28 bg-white p-2 rounded-2xl shadow-2xl border border-stone-100 overflow-hidden">
-                                                <img 
-                                                    src={getImageUrl(monthData.best_seller?.image)} 
-                                                    className="w-full h-full object-cover rounded-xl"
-                                                    alt=""
-                                                />
+                                        <div className="mb-4 translate-y-6 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-700 scale-50 group-hover:scale-100 origin-bottom">
+                                            <div className="w-24 h-32 bg-white p-2 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-stone-100 overflow-hidden relative">
+                                                {monthData.best_seller?.image ? (
+                                                    <img 
+                                                        src={getImageUrl(monthData.best_seller.image)} 
+                                                        className="w-full h-full object-cover rounded-xl"
+                                                        alt=""
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-stone-50 rounded-xl"><ShoppingBag size={20} className="text-stone-200" /></div>
+                                                )}
+                                                <div className="absolute top-2 right-2 bg-stone-900 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-lg">
+                                                    {monthData.best_seller?.sold || 0}
+                                                </div>
                                             </div>
-                                            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 bg-stone-900 text-white text-[9px] font-black px-2 py-1 rounded-lg">
-                                                {monthData.best_seller?.sold}
-                                            </div>
+                                            <div className="w-3 h-3 bg-white border-r border-b border-stone-100 rotate-45 mx-auto -mt-1.5 shadow-sm"></div>
                                         </div>
                                         
-                                        <div className="w-4 h-4 rounded-full bg-white border-4 border-stone-900 shadow-lg group-hover:scale-125 transition-transform" />
+                                        <div className="w-5 h-5 rounded-full bg-white border-[5px] border-stone-900 shadow-xl group-hover:scale-125 group-hover:border-primary transition-all duration-500 cursor-pointer" />
                                     </div>
 
                                     {/* Month Label */}
-                                    <div className="mt-12 text-center">
-                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 group-hover:text-stone-900 transition-colors">
-                                            {monthData.name}
-                                        </p>
-                                        <p className="text-[9px] font-bold text-stone-300 italic opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {monthData.best_seller?.sold || 0} ventes
+                                    <div className="mt-16 text-center space-y-1">
+                                        <div className="px-3 py-1 bg-stone-50 rounded-lg group-hover:bg-stone-900 transition-colors">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 group-hover:text-white">
+                                                {monthData.name}
+                                            </p>
+                                        </div>
+                                        <p className="text-[9px] font-bold text-stone-300 italic opacity-0 group-hover:opacity-100 transition-all">
+                                            {monthData.best_seller?.name || 'Aucune vente'}
                                         </p>
                                     </div>
                                 </div>
