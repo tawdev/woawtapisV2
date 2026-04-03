@@ -13,11 +13,19 @@ class AdminProductController extends Controller
     /**
      * Display a listing of products.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Product::with(['category', 'type', 'images'])
-            ->latest()
-            ->paginate(20);
+        $query = Product::with(['category', 'type', 'images']);
+        
+        if ($request->has('search') && !empty($request->search)) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('category_id') && !empty($request->category_id)) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        return $query->latest()->paginate(20);
     }
 
     /**

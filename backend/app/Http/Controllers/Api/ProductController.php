@@ -49,6 +49,42 @@ class ProductController extends Controller
             $query->where('color', 'like', "%{$color}%");
         }
 
+        // Dimension filters — check dedicated columns OR parse from size field (format "NxM")
+        if ($request->filled('max_longueur')) {
+            $val = (int) $request->input('max_longueur');
+            $query->where(function ($q) use ($val) {
+                // Use max_longueur column if set, else parse first part of size (e.g. "200x300" → 200)
+                $q->where('max_longueur', '<=', $val)
+                  ->orWhere(function ($q2) use ($val) {
+                      $q2->whereNull('max_longueur')
+                         ->whereRaw("CAST(SUBSTRING_INDEX(REPLACE(size, ' ', ''), 'x', 1) AS UNSIGNED) <= ?", [$val]);
+                  });
+            });
+        }
+
+        if ($request->filled('max_largeur')) {
+            $val = (int) $request->input('max_largeur');
+            $query->where(function ($q) use ($val) {
+                // Use max_largeur column if set, else parse second part of size (e.g. "200x300" → 300)
+                $q->where('max_largeur', '<=', $val)
+                  ->orWhere(function ($q2) use ($val) {
+                      $q2->whereNull('max_largeur')
+                         ->whereRaw("CAST(SUBSTRING_INDEX(REPLACE(size, ' ', ''), 'x', -1) AS UNSIGNED) <= ?", [$val]);
+                  });
+            });
+        }
+
+        // New Special filters
+        if ($request->boolean('is_couloir')) {
+            $query->where('is_couloir', true);
+        }
+        if ($request->boolean('is_tapis_de_lit')) {
+            $query->where('is_tapis_de_lit', true);
+        }
+        if ($request->filled('sub_category')) {
+            $query->where('sub_category', $request->sub_category);
+        }
+
         return $query->paginate($request->input('per_page', 12));
     }
 

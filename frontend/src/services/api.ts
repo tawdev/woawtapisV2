@@ -28,7 +28,19 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
 }
 
 export const productService = {
-  getAll: (params: string = '') => fetchApi(`/products?${params}`),
+  getAll: (params: any = {}) => {
+    const query = typeof params === 'string' 
+      ? params 
+      : new URLSearchParams(
+          Object.entries(params).reduce((acc: any, [key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              acc[key] = String(value);
+            }
+            return acc;
+          }, {})
+        ).toString();
+    return fetchApi(`/products?${query}`);
+  },
   getById: (id: string | number) => fetchApi(`/products/${id}`),
   getBySlug: (slug: string) => fetchApi(`/products/${slug}`),
   getFeatured: () => fetchApi('/featured-products'),

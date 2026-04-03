@@ -8,7 +8,8 @@ import ProductCard from '@/components/product/ProductCard';
 import Image from 'next/image';
 import { productService, contactService } from '@/services/api';
 
-import { Truck, Wrench, Gem, Send, Loader2, CheckCircle2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Truck, Wrench, Gem, Send, Loader2, CheckCircle2, ChevronRight, X } from 'lucide-react';
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -24,6 +25,71 @@ export default function Home() {
     subject: '',
     message: ''
   });
+
+  const router = useRouter();
+  const [selectedCollection, setSelectedCollection] = useState<{
+    id: string;
+    title: string;
+    options: { label: string; desc: string; catId: string; type: string }[]
+  } | null>(null);
+
+  const collections = [
+    {
+      id: "marocain",
+      title: "Marocain",
+      desc: "Art ancestral berbère tissé à la main dans les montagnes du Moyen Atlas. Chaque pièce raconte l'histoire d'une tradition vivante.",
+      img: "/images/collection_marocain.png",
+      options: [
+        { label: "En Stock", desc: "Des pièces prêtes à être expédiées, directement issues des ateliers berbères.", catId: "5", type: "stock" },
+        { label: "Sur Mesure", desc: "Créez votre tapis marocain aux dimensions et couleurs de votre choix.", catId: "8", type: "mesure" },
+        { label: "Vintage", desc: "Pièces d'exception aux patines du temps, rares et recherchées par les connaisseurs.", catId: "19", type: "vintage" }
+      ]
+    },
+    {
+      id: "moderne",
+      title: "Moderne",
+      desc: "Design contemporain épuré fusionnant savoir-faire artisanal et esthétique actuelle. Pour les intérieurs qui osent.",
+      img: "/images/collection_moderne.png",
+      options: [
+        { label: "En Stock", desc: "Des créations contemporaines prêtes à transformer votre espace immédiatement.", catId: "1", type: "stock" },
+        { label: "Sur Mesure", desc: "Personnalisez chaque détail — taille, couleur, motif — pour une pièce unique.", catId: "11", type: "mesure" }
+      ]
+    },
+    {
+      id: "iran",
+      title: "Iran",
+      desc: "La quintessence de l'art persan. Médaillons floraux, jeux de couleurs profondes et finesse d'un tissage millénaire.",
+      img: "/images/collection_iran.png",
+      options: [
+        { label: "En Stock", desc: "Authentiques tapis persans disponibles immédiatement pour livraison.", catId: "2", type: "stock" },
+        { label: "Vintage", desc: "Tapis anciens persans d'époque, chargés d'histoire et de rareté absolue.", catId: "18", type: "vintage" }
+      ]
+    },
+    {
+      id: "turc",
+      title: "Turc",
+      desc: "L'héritage ottoman revisité. Motifs de tulipes et arabesques tissés avec des laines nobles aux teintes profondes.",
+      img: "/images/collection_turc.png",
+      options: [
+        { label: "En Stock", desc: "Authentiques tapis turcs disponibles pour une livraison rapide.", catId: "4", type: "stock" },
+        { label: "Vintage", desc: "Pièces ottomanes anciennes d'une rareté et d'une authenticité incomparables.", catId: "17", type: "vintage" }
+      ]
+    }
+  ];
+
+  const handleCollectionClick = (col: typeof collections[0]) => {
+    setSelectedCollection({ 
+      id: col.id, 
+      title: col.title, 
+      options: col.options 
+    });
+  };
+
+  const handleSubChoiceClick = (catId: string) => {
+    router.push(`/products?category=${catId}`);
+    setSelectedCollection(null);
+  };
+
 
   useEffect(() => {
     async function loadData() {
@@ -123,6 +189,91 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* Collections Section */}
+        <section className="py-24 bg-stone-50 border-t border-stone-200">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16 space-y-4">
+              <h2 className="text-primary uppercase tracking-[0.2em] text-sm font-bold">Nos Univers</h2>
+              <h3 className="text-4xl md:text-5xl font-serif font-bold italic">Nos Collections</h3>
+              <div className="h-1 w-16 bg-primary mx-auto" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {collections.map((col) => (
+                <div 
+                  key={col.id} 
+                  onClick={() => handleCollectionClick(col)}
+                  className="group cursor-pointer relative overflow-hidden rounded-sm bg-white shadow-sm border border-stone-100 hover:shadow-xl transition-all duration-500 flex flex-col h-full"
+                >
+                  <div className="relative h-64 overflow-hidden">
+                    <div className="absolute inset-0 bg-stone-900/10 z-10 group-hover:bg-transparent transition-colors duration-500" />
+                    <Image 
+                      src={col.img} 
+                      alt={col.title}
+                      fill
+                      className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                    />
+                  </div>
+                  <div className="p-6 flex-1 flex flex-col items-center text-center">
+                    <h4 className="text-2xl font-serif font-bold italic text-stone-900 mb-3">{col.title}</h4>
+                    <p className="text-sm font-light text-stone-500 mb-6 flex-1">{col.desc}</p>
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-black text-primary group-hover:text-stone-900 transition-colors">
+                      Explorer la ligne
+                      <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Sub-choice Modal */}
+        {selectedCollection && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={() => setSelectedCollection(null)} />
+            <div className="relative bg-white w-full max-w-4xl min-h-[500px] flex flex-col rounded-sm shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+              <button 
+                onClick={() => setSelectedCollection(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-stone-900 hover:text-primary transition-colors border border-stone-200 hover:border-primary shadow-sm"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className="text-center py-8 bg-stone-50 border-b border-stone-100">
+                <h3 className="text-sm tracking-widest uppercase font-bold text-primary mb-2">Gamme {selectedCollection.title}</h3>
+                <h2 className="text-3xl font-serif font-bold italic text-stone-900">Que préférez-vous ?</h2>
+              </div>
+              
+              <div className={`flex-1 grid grid-cols-1 ${selectedCollection.options.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'} p-8 gap-8`}>
+                {selectedCollection.options.map((opt) => (
+                  <div 
+                    key={opt.catId}
+                    onClick={() => handleSubChoiceClick(opt.catId)}
+                    className="group relative h-80 md:h-full min-h-[320px] rounded-sm overflow-hidden cursor-pointer shadow-lg border border-stone-100 hover:shadow-2xl transition-shadow"
+                  >
+                    <Image 
+                      src="/images/hero-carpet.jpg" 
+                      alt={opt.label} 
+                      fill 
+                      className={`object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 ${opt.type === 'mesure' ? 'blur-[2px]' : opt.type === 'vintage' ? 'sepia-[.4]' : ''}`} 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+                    <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                      <h3 className="text-3xl font-serif font-bold italic text-white mb-2">{opt.label}</h3>
+                      <p className="text-sm font-light text-white/80 mb-6">{opt.desc}</p>
+                      <div className="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-black text-primary bg-white px-6 py-3 w-fit rounded-sm group-hover:bg-primary group-hover:text-white transition-colors">
+                        {opt.type === 'mesure' ? 'Créer le mien' : 'Découvrir'} <ChevronRight size={14} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Featured Products Section */}
         <section className="py-24 bg-white">
           <div className="container mx-auto px-4">
@@ -138,13 +289,13 @@ export default function Home() {
 
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 animate-pulse">
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="aspect-square bg-stone-100 rounded-sm" />
                 ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {featuredProducts.map((product: any) => (
+                {featuredProducts.slice(0, 4).map((product: any) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>

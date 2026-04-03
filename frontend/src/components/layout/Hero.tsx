@@ -6,13 +6,15 @@ export default function Hero() {
         <section className="relative h-screen flex items-center overflow-hidden bg-stone-900">
             {/* Background with advanced overlay */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-900/40 to-transparent z-10" />
+                <div className="absolute inset-0 bg-gradient-to-r from-stone-950/90 via-stone-900/50 to-stone-900/20 z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950/60 via-transparent to-stone-900/30 z-10" />
                 <Image
-                    src="/images/hero-carpet.jpg"
-                    alt="Tapis de luxe"
+                    src="/images/hero-carpet-luxury.jpg"
+                    alt="Tapis de luxe fait main - WoawTapis"
                     fill
                     priority
                     sizes="100vw"
+                    quality={90}
                     className="object-cover scale-105 animate-slow-zoom"
                 />
             </div>

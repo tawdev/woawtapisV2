@@ -1,111 +1,159 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/product/ProductCard';
 import { productService, categoryService } from '@/services/api';
-import { useRouter } from 'next/navigation';
-import { Filter, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { 
+    ChevronLeft, 
+    ChevronRight, 
+    Search, 
+    SlidersHorizontal, 
+    LayoutGrid, 
+    List,
+    ChevronRight as ChevronRightIcon,
+    ArrowRight,
+    X,
+    Filter
+} from 'lucide-react';
 
-const COLORS = [
-    { name: 'Beige', hex: '#F5F5DC' },
-    { name: 'Blanc', hex: '#E8E8E8' },
-    { name: 'Bleu', hex: '#3B82F6' },
-    { name: 'Vert', hex: '#10B981' },
-    { name: 'Gris', hex: '#9CA3AF' },
-    { name: 'Jaune', hex: '#FBBF24' },
-    { name: 'Marron', hex: '#78350F' },
-    { name: 'Noir', hex: '#171717' },
-    { name: 'Orange', hex: '#F97316' },
-    { name: 'Rose', hex: '#EC4899' },
-    { name: 'Rouge', hex: '#EF4444' },
-    { name: 'Violet', hex: '#8B5CF6' },
-    { name: 'Turquoise', hex: '#14B8A6' },
-];
+// Skeleton component for loading state
+const ProductsPageSkeleton = () => (
+    <div className="animate-pulse space-y-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="space-y-4">
+                    <div className="aspect-[3/4] bg-stone-200 rounded-2xl" />
+                    <div className="h-4 bg-stone-200 rounded w-2/3" />
+                    <div className="h-4 bg-stone-200 rounded w-1/2" />
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 function ProductsContent() {
     const searchParams = useSearchParams();
-    const [products, setProducts] = useState<any[]>([]);
-    const [categories, setCategories] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
-    const [hasMore, setHasMore] = useState(false);
-
     const router = useRouter();
     const type = searchParams.get('type');
     const catParam = searchParams.get('category');
     const searchParam = searchParams.get('search');
     const colorsParam = searchParams.get('colors') || '';
     const selectedColors = colorsParam ? colorsParam.split(',').filter(Boolean) : [];
+    const longueurParam = searchParams.get('max_longueur') || '';
+    const largeurParam = searchParams.get('max_largeur') || '';
+    const subCatParam = searchParams.get('sub_category') || '';
+    const isCouloirParam = searchParams.get('is_couloir') === 'true';
+    const isLitParam = searchParams.get('is_tapis_de_lit') === 'true';
 
-    const toggleColor = (colorName: string) => {
-        const params = new URLSearchParams(searchParams.toString());
-        const next = selectedColors.includes(colorName)
-            ? selectedColors.filter(c => c !== colorName)
-            : [...selectedColors, colorName];
-        if (next.length === 0) {
-            params.delete('colors');
-        } else {
-            params.set('colors', next.join(','));
+    const [localLongueur, setLocalLongueur] = useState(longueurParam);
+    const [localLargeur, setLocalLargeur] = useState(largeurParam);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    const [products, setProducts] = useState<any[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [pagination, setPagination] = useState({
+        total: 0,
+        current_page: 1,
+        last_page: 1,
+    });
+
+    const currentPage = parseInt(searchParams.get('page') || '1');
+
+    // Finding active category name to check for "Moderne"
+    const activeCategory = categories.find(c => String(c.id) === catParam);
+    const isModerneActive = activeCategory?.name?.toLowerCase().includes('moderne');
+
+    const scroll = (direction: 'left' | 'right') => {
+        if (scrollContainerRef.current) {
+            const { current } = scrollContainerRef;
+            const scrollAmount = 300;
+            current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
         }
-        params.delete('page');
-        router.push(`/products?${params.toString()}`);
     };
 
     useEffect(() => {
-        async function loadInitialData() {
-            setLoading(true);
-            setError(null);
+        const loadInitialData = async () => {
             try {
-                const params = new URLSearchParams(searchParams.toString());
-                params.set('page', '1');
-                
-                const [productsData, categoriesData] = await Promise.all([
-                    productService.getAll(params.toString()),
+                const [categoriesData] = await Promise.all([
                     categoryService.getAll(),
                 ]);
+                setCategories(categoriesData);
+            } catch (error) {
+                console.error("Error loading categories:", error);
+            }
+        };
+        loadInitialData();
+    }, []);
 
-                const productList = productsData.data || (Array.isArray(productsData) ? productsData : []);
-                setProducts(productList);
-                setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-                
-                setTotalItems(productsData.total || productList.length);
-                setHasMore(productsData.last_page ? 1 < productsData.last_page : false);
-                setPage(1);
-            } catch (err: any) {
-                console.error("Failed to load products:", err);
-                setError("Impossible de charger les produits. Veuillez réessayer plus tard.");
+    useEffect(() => {
+        const fetchProducts = async () => {
+            setLoading(true);
+            try {
+                const params: any = {
+                    page: currentPage,
+                    per_page: 12,
+                    category: catParam || undefined,
+                    type: type || undefined,
+                    search: searchParam || undefined,
+                    colors: colorsParam || undefined,
+                    max_longueur: longueurParam || undefined,
+                    max_largeur: largeurParam || undefined,
+                    is_couloir: isCouloirParam || undefined,
+                    is_tapis_de_lit: isLitParam || undefined,
+                    sub_category: subCatParam || undefined,
+                };
+                const response = await productService.getAll(params);
+                setProducts(response.data);
+                setPagination({
+                    total: response.total,
+                    current_page: response.current_page,
+                    last_page: response.last_page,
+                });
+            } catch (error) {
+                console.error("Error fetching products:", error);
             } finally {
                 setLoading(false);
             }
-        }
-        loadInitialData();
-    }, [searchParams]);
+        };
 
-    const handleLoadMore = async () => {
-        setLoadingMore(true);
-        try {
-            const nextPage = page + 1;
-            const params = new URLSearchParams(searchParams.toString());
-            params.set('page', nextPage.toString());
-            
-            const productsData = await productService.getAll(params.toString());
-            const productList = productsData.data || (Array.isArray(productsData) ? productsData : []);
-            
-            setProducts(prev => [...prev, ...productList]);
-            setPage(nextPage);
-            setHasMore(productsData.last_page ? nextPage < productsData.last_page : false);
-        } catch (err) {
-            console.error("Failed to load more products:", err);
-        } finally {
-            setLoadingMore(false);
+        fetchProducts();
+    }, [currentPage, catParam, type, searchParam, colorsParam, longueurParam, largeurParam, isCouloirParam, isLitParam, subCatParam]);
+
+    const handlePageChange = (page: number) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('page', page.toString());
+        router.push(`/products?${params.toString()}`);
+        window.scrollTo({ top: 400, behavior: 'smooth' });
+    };
+
+    const handleDimensionApply = (dimType: 'longueur' | 'largeur', value: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (value) {
+            params.set(`max_${dimType}`, value);
+        } else {
+            params.delete(`max_${dimType}`);
         }
+        params.set('page', '1');
+        router.push(`/products?${params.toString()}`);
+    };
+
+    // Helper for pagination numbers
+    const getPageNumbers = () => {
+        const totalPages = pagination.last_page;
+        const pages = [];
+        for (let i = 1; i <= totalPages; i++) {
+            if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+                pages.push(i);
+            } else if (pages[pages.length - 1] !== '...') {
+                pages.push('...');
+            }
+        }
+        return pages;
     };
 
     return (
@@ -127,144 +175,249 @@ function ProductsContent() {
                 </div>
             </section>
 
+            {/* Sticky Horizontal Categories Filter */}
+            <div className="sticky top-[72px] z-40 bg-white border-b border-stone-100 shadow-sm overflow-hidden">
+                <div className="container mx-auto px-4 relative group">
+                    <button 
+                        onClick={() => scroll('left')}
+                        className="absolute left-6 top-1/2 -translate-y-1/2 z-50 w-10 h-10 bg-white border border-stone-100 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-stone-900 hover:text-white"
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
+                    
+                    <button 
+                        onClick={() => scroll('right')}
+                        className="absolute right-6 top-1/2 -translate-y-1/2 z-50 w-10 h-10 bg-white border border-stone-100 rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-stone-900 hover:text-white"
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+
+                    <div ref={scrollContainerRef} className="flex items-center gap-3 overflow-x-auto no-scrollbar py-6 scroll-smooth px-2">
+                        <Link 
+                            href="/products" 
+                            className={`whitespace-nowrap px-8 py-3 text-[10px] uppercase tracking-[0.25em] font-black transition-all duration-500 rounded-full border ${
+                                !catParam ? 'bg-stone-900 text-white border-stone-900 shadow-xl scale-105' : 'bg-stone-50 text-stone-400 border-transparent hover:border-stone-900 hover:text-stone-900 hover:bg-white'
+                            }`}
+                        >
+                            Tous les Tapis
+                        </Link>
+                        {categories.map((cat: any) => (
+                            <Link
+                                key={cat.id}
+                                href={`/products?category=${cat.id}${type ? `&type=${type}` : ''}`}
+                                className={`whitespace-nowrap px-8 py-3 text-[10px] uppercase tracking-[0.25em] font-black transition-all duration-500 rounded-full border ${
+                                    catParam === String(cat.id) ? 'bg-stone-900 text-white border-stone-900 shadow-xl scale-105' : 'bg-stone-50 text-stone-400 border-transparent hover:border-stone-900 hover:text-stone-900 hover:bg-white'
+                                }`}
+                            >
+                                {cat.name.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
             <main className="container mx-auto px-4 py-24">
                 <div className="flex flex-col lg:flex-row gap-16">
-                    {/* Sidebar / Filters - sticky */}
-                    <aside className="w-full lg:w-64 shrink-0">
-                        <div className="lg:sticky lg:top-28 space-y-6">
-                            {/* Categories Card */}
-                            <div className="p-6 bg-white border border-stone-100 shadow-sm">
-                                <h3 className="text-xs uppercase tracking-[0.3em] font-black text-stone-900 mb-6 pb-4 border-b border-stone-100 flex items-center gap-2">
-                                    <Filter size={14} className="text-primary" /> Catégories
+                    {/* Sidebar / Filters */}
+                    <aside className="w-full lg:w-72 shrink-0">
+                        <div className="lg:sticky lg:top-[160px] space-y-8 lg:max-h-[calc(100vh-12rem)] lg:overflow-y-auto lg:pr-2 no-scrollbar">
+                            
+                            {/* Format & Usage */}
+                            <div className="space-y-4">
+                                <h3 className="text-[11px] uppercase tracking-[0.4em] font-black text-stone-900 mb-4 flex items-center gap-2">
+                                    <span className="h-px w-4 bg-primary" /> Format & Usage
                                 </h3>
-                                <ul className="space-y-4">
-                                    <li>
-                                        <Link href="/products" className={`text-xs uppercase tracking-widest hover:text-primary transition-all duration-300 flex justify-between items-center group ${!catParam ? 'text-primary font-black' : 'text-stone-500 font-bold'}`}>
-                                            <span>Tous les Tapis</span>
-                                            <ChevronRight size={12} className={`transition-transform duration-300 group-hover:translate-x-1 ${!catParam ? 'opacity-100' : 'opacity-0'}`} />
-                                        </Link>
-                                    </li>
-                                    {categories.map((cat: any) => (
-                                        <li key={cat.id}>
-                                            <Link
-                                                href={`/products?category=${cat.id}`}
-                                                className={`text-xs uppercase tracking-widest hover:text-primary transition-all duration-300 flex justify-between items-center group ${catParam === String(cat.id) ? 'text-primary font-black' : 'text-stone-500 font-bold'}`}
-                                            >
-                                                <span>{cat.name}</span>
-                                                <ChevronRight size={12} className={`transition-transform duration-300 group-hover:translate-x-1 ${catParam === String(cat.id) ? 'opacity-100' : 'opacity-0'}`} />
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <button
+                                        onClick={() => {
+                                            const params = new URLSearchParams(searchParams.toString());
+                                            if (isCouloirParam) params.delete('is_couloir');
+                                            else params.set('is_couloir', 'true');
+                                            router.push(`/products?${params.toString()}`);
+                                        }}
+                                        className={`group relative flex items-center justify-between px-6 py-5 border transition-all duration-500 ${
+                                            isCouloirParam 
+                                            ? 'bg-stone-900 border-stone-900 text-white shadow-2xl scale-[1.02] z-10' 
+                                            : 'bg-white border-stone-100 text-stone-600 hover:border-primary hover:shadow-lg'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-2 rounded-lg transition-colors ${isCouloirParam ? 'bg-white/10' : 'bg-stone-50 group-hover:bg-primary/10'}`}>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={isCouloirParam ? 'text-primary' : 'text-stone-400 group-hover:text-primary'}><path d="M2 9h20M2 15h20M2 9v6M22 9v6M7 9v6M12 9v6M17 9v6"/></svg>
+                                            </div>
+                                            <div className="text-left">
+                                                <span className="block text-[11px] font-black uppercase tracking-widest">Couloir</span>
+                                                <span className={`text-[9px] uppercase tracking-tighter ${isCouloirParam ? 'text-stone-400' : 'text-stone-300'}`}>Tapis de passage</span>
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => {
+                                            const params = new URLSearchParams(searchParams.toString());
+                                            if (isLitParam) params.delete('is_tapis_de_lit');
+                                            else params.set('is_tapis_de_lit', 'true');
+                                            router.push(`/products?${params.toString()}`);
+                                        }}
+                                        className={`group relative flex items-center justify-between px-6 py-5 border transition-all duration-500 ${
+                                            isLitParam 
+                                            ? 'bg-stone-900 border-stone-900 text-white shadow-2xl scale-[1.02] z-10' 
+                                            : 'bg-white border-stone-100 text-stone-600 hover:border-primary hover:shadow-lg'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-2 rounded-lg transition-colors ${isLitParam ? 'bg-white/10' : 'bg-stone-50 group-hover:bg-primary/10'}`}>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={isLitParam ? 'text-primary' : 'text-stone-400 group-hover:text-primary'}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                                            </div>
+                                            <div className="text-left">
+                                                <span className="block text-[11px] font-black uppercase tracking-widest">Descente de Lit</span>
+                                                <span className={`text-[9px] uppercase tracking-tighter ${isLitParam ? 'text-stone-400' : 'text-stone-300'}`}>Formats de chambre</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
 
-                            {/* Color Filter */}
-                            <div className="p-6 bg-white border border-stone-100 shadow-sm">
-                                <h3 className="text-xs uppercase tracking-[0.3em] font-black text-stone-900 mb-6 pb-4 border-b border-stone-100">
-                                    Couleurs
-                                </h3>
-                                <div className="flex flex-wrap gap-3">
-                                    {selectedColors.length > 0 && (
-                                        <button
-                                            onClick={() => {
-                                                const params = new URLSearchParams(searchParams.toString());
-                                                params.delete('colors');
-                                                router.push(`/products?${params.toString()}`);
-                                            }}
-                                            className="text-[10px] uppercase tracking-widest font-bold text-primary hover:underline block w-full text-left mb-2"
-                                        >
-                                            × Effacer ({selectedColors.length})
-                                        </button>
-                                    )}
-                                    {COLORS.map((color) => {
-                                        const isSelected = selectedColors.includes(color.name);
-                                        return (
+                            {/* Collections Modernes */}
+                            {isModerneActive && (
+                                <div className="p-8 bg-stone-900 text-white shadow-2xl relative overflow-hidden group rounded-2xl">
+                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-primary/20 transition-colors duration-500" />
+                                    <h3 className="text-[11px] uppercase tracking-[0.4em] font-black text-primary mb-6 relative z-10 flex items-center gap-2">
+                                        <span className="h-px w-4 bg-primary" /> Collections Modernes
+                                    </h3>
+                                    <div className="space-y-2 relative z-10">
+                                        {[
+                                            { id: 'home_elegance', name: 'Home Elegance', desc: 'Prestige & Confort' },
+                                            { id: 'kids_tapis', name: 'Kids Tapis', desc: 'Univers Enfants' },
+                                            { id: 'tapis_moquette', name: 'Tapis Moquette', desc: 'Style Contemporain' }
+                                        ].map(sub => (
                                             <button
-                                                key={color.name}
-                                                title={color.name}
-                                                onClick={() => toggleColor(color.name)}
-                                                className={`w-7 h-7 rounded-full border-2 transition-all duration-300 hover:scale-110 ${
-                                                    isSelected
-                                                        ? 'border-primary scale-110 ring-2 ring-primary/30'
-                                                        : 'border-stone-200'
+                                                key={sub.id}
+                                                onClick={() => {
+                                                    const params = new URLSearchParams(searchParams.toString());
+                                                    if (subCatParam === sub.id) params.delete('sub_category');
+                                                    else params.set('sub_category', sub.id);
+                                                    router.push(`/products?${params.toString()}`);
+                                                }}
+                                                className={`w-full text-left px-5 py-4 transition-all duration-300 border ${
+                                                    subCatParam === sub.id 
+                                                        ? 'bg-primary text-white border-primary shadow-lg' 
+                                                        : 'bg-white/5 border-white/10 text-stone-300 hover:border-primary hover:text-white'
                                                 }`}
-                                                style={{ backgroundColor: color.hex }}
-                                            />
-                                        );
-                                    })}
+                                            >
+                                                <span className="block text-[10px] uppercase font-black tracking-widest">{sub.name}</span>
+                                                <span className={`text-[8px] uppercase tracking-widest mt-1 block ${subCatParam === sub.id ? 'text-white/70' : 'text-stone-500'}`}>{sub.desc}</span>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                                {selectedColors.length > 0 && (
-                                    <p className="text-[10px] text-stone-400 mt-3 font-bold uppercase tracking-widest">
-                                        Filtre: {selectedColors.join(', ')}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="p-6 bg-stone-900 text-white shadow-xl">
-                                <h3 className="text-xs uppercase tracking-[0.3em] font-black text-primary mb-4">Personnalisation</h3>
-                                <p className="text-xs text-stone-400 leading-relaxed mb-4 font-light">Besoin d&apos;une dimension particulière ou d&apos;un motif unique ?</p>
-                                <Link href="/products?type=sur_mesure" className="block text-center border border-white/20 py-3 text-[10px] uppercase tracking-widest font-black hover:bg-white hover:text-stone-900 transition-all duration-500">
-                                    Créer mon Tapis
-                                </Link>
+                            )}
+
+                            {/* Dimensions */}
+                            <div className="p-8 bg-white border border-stone-100 shadow-sm rounded-2xl">
+                                <h3 className="text-xs uppercase tracking-[0.3em] font-black text-stone-900 mb-6 pb-4 border-b border-stone-100">
+                                    Dimensions (cm)
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-widest font-black text-stone-500 block">Longueur max</label>
+                                        <input
+                                            type="number"
+                                            value={localLongueur}
+                                            onChange={(e) => setLocalLongueur(e.target.value)}
+                                            onBlur={() => handleDimensionApply('longueur', localLongueur)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleDimensionApply('longueur', localLongueur)}
+                                            className="w-full px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all font-bold text-sm"
+                                            placeholder="ex: 300"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] uppercase tracking-widest font-black text-stone-500 block">Largeur max</label>
+                                        <input
+                                            type="number"
+                                            value={localLargeur}
+                                            onChange={(e) => setLocalLargeur(e.target.value)}
+                                            onBlur={() => handleDimensionApply('largeur', localLargeur)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleDimensionApply('largeur', localLargeur)}
+                                            className="w-full px-4 py-3 bg-stone-50 border border-stone-100 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all font-bold text-sm"
+                                            placeholder="ex: 200"
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </aside>
 
                     {/* Product Grid */}
                     <div className="flex-1">
-                        <div className="flex justify-between items-center mb-12 pb-6 border-b border-stone-100">
-                            <p className="text-[10px] uppercase tracking-widest font-black text-stone-400">
-                                <span className="text-stone-900">{totalItems}</span> Trésors Identifiés
-                            </p>
-                            <div className="flex items-center gap-4">
-                                <span className="text-[10px] uppercase tracking-widest font-black text-stone-400">Trier par:</span>
-                                <select className="bg-transparent border-none text-[10px] uppercase tracking-widest font-black text-stone-900 focus:ring-0 outline-none cursor-pointer">
-                                    <option>Séléction Exclusive</option>
-                                    <option>Prix Croissant</option>
-                                    <option>Prix Décroissant</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        {error ? (
-                            <div className="text-center py-32 bg-white border border-stone-100 luxury-glass">
-                                <p className="text-stone-900 font-serif text-xl italic mb-6">{error}</p>
-                                <button onClick={() => window.location.reload()} className="btn-premium">Réessayer la recherche</button>
-                            </div>
-                        ) : loading ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-12">
-                                {[1, 2, 3, 4].map((i) => (
-                                    <div key={i} className="aspect-[4/5] bg-white animate-pulse" />
-                                ))}
-                            </div>
-                        ) : products.length > 0 ? (
-                            <div className="space-y-16">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {products.map((product: any) => (
-                                        <ProductCard key={product.id} product={product} />
-                                    ))}
+                        {loading ? (
+                            <ProductsPageSkeleton />
+                        ) : (
+                            <>
+                                <div className="flex items-center justify-between mb-12">
+                                    <p className="text-stone-400 text-sm font-medium italic">
+                                        <span className="text-stone-900 font-bold not-italic">{pagination.total}</span> produits d'exception trouvés
+                                    </p>
                                 </div>
 
-                                {hasMore && (
-                                    <div className="text-center pt-8 border-t border-stone-100">
-                                        <button
-                                            onClick={handleLoadMore}
-                                            disabled={loadingMore}
-                                            className="btn-premium disabled:opacity-50 disabled:cursor-not-allowed"
+                                {products.length === 0 ? (
+                                    <div className="text-center py-32 bg-white rounded-3xl border border-stone-100">
+                                        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <Filter className="w-8 h-8 text-stone-200" />
+                                        </div>
+                                        <h3 className="text-xl font-serif font-bold text-stone-900 mb-2">Aucun résultat</h3>
+                                        <p className="text-stone-500 max-w-xs mx-auto">Essayez de modifier vos filtres pour trouver le tapis idéal.</p>
+                                        <button 
+                                            onClick={() => router.push('/products')}
+                                            className="mt-8 text-xs uppercase tracking-widest font-black text-stone-900 border-b-2 border-primary pb-1"
                                         >
-                                            {loadingMore ? 'Chargement...' : 'Découvrir Plus de Pièces'}
+                                            Voir toute la collection
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
+                                        {products.map((product) => (
+                                            <ProductCard key={product.id} product={product} />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Pagination */}
+                                {pagination.last_page > 1 && (
+                                    <div className="mt-24 flex items-center justify-center gap-2">
+                                        <button
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                            className="w-12 h-12 rounded-full border border-stone-200 flex items-center justify-center transition-all hover:bg-stone-900 hover:text-white disabled:opacity-30"
+                                        >
+                                            <ChevronLeft size={18} />
+                                        </button>
+
+                                        {getPageNumbers().map((page, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => typeof page === 'number' && handlePageChange(page)}
+                                                disabled={page === '...'}
+                                                className={`w-12 h-12 rounded-full text-xs font-black transition-all ${
+                                                    page === currentPage
+                                                        ? 'bg-stone-900 text-white shadow-xl scale-110'
+                                                        : page === '...' ? 'cursor-default' : 'hover:bg-stone-100 text-stone-600'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+
+                                        <button
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === pagination.last_page}
+                                            className="w-12 h-12 rounded-full border border-stone-200 flex items-center justify-center transition-all hover:bg-stone-900 hover:text-white disabled:opacity-30"
+                                        >
+                                            <ChevronRight size={18} />
                                         </button>
                                     </div>
                                 )}
-                            </div>
-                        ) : (
-                            <div className="text-center py-40 bg-white border border-stone-100">
-                                <div className="w-16 h-[1px] bg-stone-200 mx-auto mb-10" />
-                                <h3 className="text-3xl font-serif font-bold text-stone-900 mb-4 block italic">Aucune pièce trouvée</h3>
-                                <p className="text-stone-400 text-sm font-light tracking-wide uppercase mb-10">Affinez vos critères pour découvrir l&apos;exception.</p>
-                                <Link href="/products" className="btn-premium">
-                                    Réinitialiser les filtres
-                                </Link>
-                            </div>
+                            </>
                         )}
                     </div>
                 </div>
@@ -277,7 +430,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
     return (
-        <Suspense fallback={<div>Chargement...</div>}>
+        <Suspense fallback={<div className="min-h-screen bg-stone-50 flex items-center justify-center"><ProductsPageSkeleton /></div>}>
             <ProductsContent />
         </Suspense>
     );

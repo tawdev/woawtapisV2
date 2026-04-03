@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { FaWhatsapp, FaTimes } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function WhatsappContact() {
     const [isOpen, setIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const pathname = usePathname();
 
     useEffect(() => {
         setMounted(true);
@@ -27,7 +29,7 @@ export default function WhatsappContact() {
         tooltip_sub: "Discutez avec un expert sur WhatsApp"
     };
 
-    if (!mounted) return null;
+    if (!mounted || pathname?.startsWith('/admin')) return null;
 
     return (
         <>

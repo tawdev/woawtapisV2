@@ -23,6 +23,7 @@ interface ProductCardProps {
         slug: string;
         price: string | number;
         sale_price?: string | number;
+        size?: string;
         category?: { name: string };
         images?: { image_path: string }[];
         type?: { name: string };
@@ -146,6 +147,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                             {product.name}
                         </h3>
                     </Link>
+                    {product.size && (
+                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold text-stone-400 bg-stone-50 border border-stone-100 px-2 py-1 rounded-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 3H3v18h18V3z"/><path d="M3 9h18M9 3v18"/></svg>
+                            {product.size.replace(/x/i, ' × ')} cm
+                        </span>
+                    )}
                 </div>
 
                 <div className="flex items-center justify-center gap-4 pt-2">

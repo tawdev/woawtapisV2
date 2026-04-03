@@ -25,7 +25,12 @@ export const adminService = {
     getStats: () => adminApi.get('/stats'),
 
     // Products
-    getProducts: (page = 1) => adminApi.get(`/products?page=${page}`),
+    getProducts: (page = 1, search = '', categoryId = '') => {
+        let url = `/products?page=${page}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (categoryId) url += `&category_id=${categoryId}`;
+        return adminApi.get(url);
+    },
     getProduct: (id: string | number) => adminApi.get(`/products/${id}`),
     createProduct: (data: any) => adminApi.post('/products', data),
     updateProduct: (id: string | number, data: any) => adminApi.put(`/products/${id}`, data),

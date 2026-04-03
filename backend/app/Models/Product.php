@@ -24,13 +24,18 @@ class Product extends Model
         'best_seller',
         'status',
         'max_longueur',
-        'max_largeur'
+        'max_largeur',
+        'is_couloir',
+        'is_tapis_de_lit',
+        'sub_category'
     ];
 
     protected $casts = [
         'color' => 'array',
         'featured' => 'boolean',
         'best_seller' => 'boolean',
+        'is_couloir' => 'boolean',
+        'is_tapis_de_lit' => 'boolean',
     ];
 
     public function category()

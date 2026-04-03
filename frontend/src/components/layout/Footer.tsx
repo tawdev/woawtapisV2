@@ -1,3 +1,12 @@
+import { FaInstagram, FaPinterestP, FaFacebookF, FaTiktok } from 'react-icons/fa6';
+
+const socials = [
+    { icon: FaInstagram, href: 'https://instagram.com', label: 'Instagram' },
+    { icon: FaPinterestP, href: 'https://pinterest.com', label: 'Pinterest' },
+    { icon: FaFacebookF, href: 'https://facebook.com', label: 'Facebook' },
+    { icon: FaTiktok, href: 'https://tiktok.com', label: 'TikTok' },
+];
+
 export default function Footer() {
     return (
         <footer className="bg-stone-900 text-white pt-24 pb-12 border-t border-white/5">
@@ -12,9 +21,18 @@ export default function Footer() {
                         <p className="text-stone-300 text-sm leading-relaxed max-w-xs mx-auto md:mx-0">
                             Maison d&apos;artisanat d&apos;exception. Nous préservons le savoir-faire ancestral du tissage berbère pour sublimer vos intérieurs contemporains.
                         </p>
-                        <div className="flex justify-center md:justify-start gap-6">
-                            {['Instagram', 'Pinterest', 'Facebook'].map(social => (
-                                <a key={social} href="#" className="text-stone-500 hover:text-primary transition-colors text-xs uppercase tracking-widest font-bold min-h-[44px] flex items-center p-2" aria-label={`Visitez notre page ${social}`}>{social}</a>
+                        <div className="flex justify-center md:justify-start gap-3">
+                            {socials.map(({ icon: Icon, href, label }) => (
+                                <a
+                                    key={label}
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={label}
+                                    className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-stone-400 hover:text-white hover:border-primary hover:bg-primary/10 transition-all duration-300"
+                                >
+                                    <Icon size={16} />
+                                </a>
                             ))}
                         </div>
                     </div>

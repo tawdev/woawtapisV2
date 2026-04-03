@@ -56,6 +56,9 @@ export default function CreateProductPage() {
         is_best_seller: false,
         max_longueur: '',
         max_largeur: '',
+        is_couloir: false,
+        is_tapis_de_lit: false,
+        sub_category: '',
     });
 
     useEffect(() => {
@@ -77,9 +80,17 @@ export default function CreateProductPage() {
         fetchData();
     }, []);
 
+    const selectedType = types.find(t => t.id.toString() === formData.type_id);
+    const selectedCategory = categories.find(c => c.id.toString() === formData.category_id);
+    
+    // Check if category name OR type name contains 'moderne' AND type name contains 'stock'
+    const showSubCategories = (selectedCategory?.name?.toLowerCase().includes('moderne') || 
+                               selectedType?.name?.toLowerCase().includes('moderne')) && 
+                               (selectedType?.name?.toLowerCase().includes('stock') || 
+                                selectedCategory?.name?.toLowerCase().includes('stock'));
+
     useEffect(() => {
         if (formData.type_id) {
-            const selectedType = types.find(t => t.id.toString() === formData.type_id);
             const surMesure = selectedType?.name?.toLowerCase() === 'sur_mesure';
             setIsSurMesure(surMesure);
             if (!surMesure) {
@@ -97,7 +108,7 @@ export default function CreateProductPage() {
             setFilteredCategories([]);
             setFormData(prev => ({ ...prev, category_id: '' }));
         }
-    }, [formData.type_id, categories, types]);
+    }, [formData.type_id, categories, types, selectedType]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -306,6 +317,46 @@ export default function CreateProductPage() {
                                     <option value="active" className="font-bold text-green-600">Actif</option>
                                     <option value="inactive" className="font-bold text-red-600">Inactif</option>
                                 </select>
+                            </div>
+
+                            {/* Dynamic Sub-categories */}
+                            {showSubCategories && (
+                                <div className="pt-4 border-t border-stone-100">
+                                    <label className="block text-[10px] uppercase tracking-widest font-black text-primary mb-2">Sous-Catégorie Moderne</label>
+                                    <select
+                                        value={formData.sub_category}
+                                        onChange={e => setFormData({ ...formData, sub_category: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-primary/5 border border-primary/20 rounded-xl outline-none focus:ring-2 focus:ring-primary transition-all text-sm font-bold text-primary"
+                                    >
+                                        <option value="">Standard (Aucune)</option>
+                                        <option value="home_elegance">Home Elegance</option>
+                                        <option value="kids_tapis">Kids Tapis</option>
+                                        <option value="tapis_moquette">Tapis Moquette</option>
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Runner and Bedside checkboxes */}
+                            <div className="pt-4 border-t border-stone-100 space-y-3">
+                                <label className="block text-[10px] uppercase tracking-widest font-black text-stone-400 mb-2">Options spéciales</label>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input 
+                                        type="checkbox"
+                                        checked={formData.is_couloir}
+                                        onChange={e => setFormData({ ...formData, is_couloir: e.target.checked })}
+                                        className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900" 
+                                    />
+                                    <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 transition-colors">Tapis de Couloir</span>
+                                </label>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input 
+                                        type="checkbox"
+                                        checked={formData.is_tapis_de_lit}
+                                        onChange={e => setFormData({ ...formData, is_tapis_de_lit: e.target.checked })}
+                                        className="w-5 h-5 rounded border-stone-300 text-stone-900 focus:ring-stone-900" 
+                                    />
+                                    <span className="text-sm font-medium text-stone-700 group-hover:text-stone-900 transition-colors">Tapis de Lit / Descente</span>
+                                </label>
                             </div>
                         </div>
                     </div>
