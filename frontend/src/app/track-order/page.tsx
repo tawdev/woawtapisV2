@@ -20,22 +20,30 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+import { useSearchParams } from 'next/navigation';
+
 export default function TrackOrderPage() {
-    const [orderNumber, setOrderNumber] = useState('');
+    const searchParams = useSearchParams();
+    const queryOrder = searchParams.get('order');
+    
+    const [orderNumber, setOrderNumber] = useState(queryOrder || '');
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleTrack = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!orderNumber.trim()) return;
-        
+    React.useEffect(() => {
+        if (queryOrder) {
+            fetchOrder(queryOrder);
+        }
+    }, [queryOrder]);
+
+    const fetchOrder = async (num: string) => {
         setLoading(true);
         setError('');
         setOrder(null);
         
         try {
-            const data = await orderService.track(orderNumber.trim());
+            const data = await orderService.track(num.trim());
             setOrder(data);
         } catch (err: any) {
             setError("Nous n'avons pas trouvé de commande avec ce numéro. Veuillez vérifier votre saisie.");
@@ -43,6 +51,12 @@ export default function TrackOrderPage() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleTrack = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!orderNumber.trim()) return;
+        fetchOrder(orderNumber);
     };
 
     const steps = [

@@ -74,12 +74,15 @@ export default function CheckoutPage() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-12">
-                            <Link href="/products" className="flex items-center justify-center gap-3 bg-stone-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-stone-800 transition-all shadow-xl shadow-stone-900/10 group">
-                                <span className="text-[10px] uppercase tracking-widest">Continuer la Collection</span>
+                            <Link 
+                                href={`/track-order?order=${orderSuccess?.order_number || (typeof orderSuccess === 'string' ? orderSuccess : '')}`} 
+                                className="flex items-center justify-center gap-3 bg-stone-900 text-white px-10 py-5 rounded-2xl font-bold hover:bg-stone-800 transition-all shadow-xl shadow-stone-900/10 group"
+                            >
+                                <span className="text-[10px] uppercase tracking-widest">Suivre ma Commande</span>
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
-                            <Link href="/" className="flex items-center justify-center gap-3 bg-stone-50 text-stone-600 px-10 py-5 rounded-2xl font-bold hover:bg-stone-100 transition-all">
-                                <span className="text-[10px] uppercase tracking-widest">Retour Accueil</span>
+                            <Link href="/products" className="flex items-center justify-center gap-3 bg-stone-50 text-stone-600 px-10 py-5 rounded-2xl font-bold hover:bg-stone-100 transition-all">
+                                <span className="text-[10px] uppercase tracking-widest">Continuer mes Achats</span>
                             </Link>
                         </div>
                     </div>
