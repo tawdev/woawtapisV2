@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/admin';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = `${API_BASE_URL}/admin`;
 
 const adminApi = axios.create({
     baseURL: API_URL,
