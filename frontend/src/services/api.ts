@@ -21,7 +21,14 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!response.ok) {
-    throw new Error(`API error: ${response.statusText}`);
+    let errorMsg = `API error: ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      errorMsg = errorData.message || errorMsg;
+    } catch (e) {
+      // Not JSON
+    }
+    throw new Error(errorMsg);
   }
 
   return response.json();

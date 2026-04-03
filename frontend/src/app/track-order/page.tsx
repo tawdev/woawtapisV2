@@ -43,11 +43,12 @@ export default function TrackOrderPage() {
         setOrder(null);
         
         try {
-            const data = await orderService.track(num.trim());
+            const data = await orderService.track(num.trim().toUpperCase());
             setOrder(data);
         } catch (err: any) {
-            setError("Nous n'avons pas trouvé de commande avec ce numéro. Veuillez vérifier votre saisie.");
-            console.error(err);
+            setError("Nous n'avons pas trouvé de commande avec ce numéro. Veuillez vérifier votre saisie ou contacter notre service client.");
+            // Log as warning instead of error for typical 'not found' user input
+            console.warn("Order tracking failed:", err.message);
         } finally {
             setLoading(false);
         }
