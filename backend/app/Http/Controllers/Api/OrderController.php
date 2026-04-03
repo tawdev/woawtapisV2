@@ -76,7 +76,7 @@ class OrderController extends Controller
 
             $order->update(['total_amount' => $total]);
 
-            return $order->load('items');
+            return $order->load('items.product.images', 'items.product.primaryImage');
         });
     }
 
