@@ -34,7 +34,7 @@ export default function AnalyticsPage() {
 
     if (loading) {
         return (
-            <div className="p-10 space-y-8 animate-pulse">
+            <div className="space-y-8 animate-pulse">
                 <div className="h-20 bg-white rounded-3xl border border-stone-100"></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {[1, 2, 3, 4, 5, 6].map(i => (
@@ -46,7 +46,7 @@ export default function AnalyticsPage() {
     }
 
     return (
-        <div className="p-10 space-y-10 pb-20 max-w-[1600px] mx-auto">
+        <div className="space-y-10 pb-20">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-2">

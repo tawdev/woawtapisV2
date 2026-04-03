@@ -12,7 +12,8 @@ import {
     LogOut,
     Menu,
     X,
-    User
+    User,
+    BarChart3
 } from 'lucide-react';
 import adminService from '@/services/admin';
 
@@ -61,6 +62,7 @@ export default function AdminLayout({
 
     const navItems = [
         { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+        { name: 'Analyse', href: '/admin/analytics', icon: BarChart3 },
         { name: 'Produits', href: '/admin/products', icon: Package },
         { name: 'Catégories', href: '/admin/categories', icon: Layers },
         { name: 'Commandes', href: '/admin/orders', icon: ShoppingCart },
