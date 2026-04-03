@@ -6,7 +6,7 @@ $kernel->bootstrap();
 
 $cats = \App\Models\Category::all();
 foreach($cats as $c) {
-    echo $c->id . ' - ' . $c->name . "\n";
+    echo $c->id . ' - ' . $c->name . ' (Slug: ' . ($c->slug ?? 'NULL') . ")\n";
 }
 
 echo "PRODUCTS TURC VINTAGE:\n";
