@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { adminService } from '@/services/admin';
+import { getImageUrl } from '@/services/api';
 import { orderStatusMap } from '@/utils/status';
 import {
     TrendingUp,
@@ -230,6 +231,52 @@ export default function AdminDashboard() {
                             Gérer l'inventaire
                         </Link>
                     </div>
+                </div>
+            </div>
+
+            {/* Best Sellers by Month Section */}
+            <div className="space-y-6">
+                <div className="flex items-center gap-4 px-2">
+                    <TrendingUp className="w-6 h-6 text-emerald-500 shadow-emerald-200" />
+                    <h2 className="text-2xl font-playfair font-bold text-stone-900 italic tracking-tight">Best-Sellers Mensuels</h2>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {stats?.monthly_sales?.map((monthData: any, idx: number) => (
+                        <div key={idx} className="bg-white rounded-[2rem] p-5 border border-stone-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 group overflow-hidden relative">
+                            {monthData.best_seller ? (
+                                <>
+                                    <div className="aspect-[4/5] w-full bg-stone-50 rounded-2xl mb-4 overflow-hidden relative border border-stone-50">
+                                        <img 
+                                            src={getImageUrl(monthData.best_seller.image)} 
+                                            alt={monthData.best_seller.name}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                                            <p className="text-white text-[10px] font-bold uppercase tracking-widest">Voir Tapis</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 opacity-60 leading-tight">{monthData.name}</p>
+                                        <h4 className="text-xs font-black text-stone-900 truncate leading-tight group-hover:text-primary transition-colors">{monthData.best_seller.name}</h4>
+                                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-stone-50">
+                                            <span className="text-[10px] font-black text-stone-900/40 uppercase tracking-widest">{monthData.best_seller.sold} Ventes</span>
+                                            <div className="w-6 h-6 bg-emerald-50 rounded-lg flex items-center justify-center">
+                                                <ArrowUpRight size={12} className="text-emerald-500" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="h-full flex flex-col justify-center items-center py-10 opacity-30">
+                                    <div className="w-12 h-12 rounded-2xl border border-stone-100 border-dashed flex items-center justify-center mb-3">
+                                        <ShoppingBag size={18} className="text-stone-300" />
+                                    </div>
+                                    <p className="text-[9px] font-bold text-stone-400 uppercase tracking-widest">{monthData.name}</p>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
 

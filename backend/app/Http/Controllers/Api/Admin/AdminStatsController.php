@@ -30,13 +30,30 @@ class AdminStatsController extends Controller
         $monthlySales = [];
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
+            
+            // Sales
             $sales = Order::whereMonth('created_at', $date->month)
                 ->whereYear('created_at', $date->year)
                 ->where('status', 'delivered')
                 ->sum('total_amount');
+
+            // Best seller of that month
+            $bestSeller = \App\Models\OrderItem::whereMonth('created_at', $date->month)
+                ->whereYear('created_at', $date->year)
+                ->select('product_id', 'product_name', \Illuminate\Support\Facades\DB::raw('sum(quantity) as total_sold'))
+                ->with(['product.primaryImage'])
+                ->groupBy('product_id', 'product_name')
+                ->orderByDesc('total_sold')
+                ->first();
+
             $monthlySales[] = [
-                'name' => $date->format('M'),
-                'total' => (float)$sales
+                'name' => $date->translatedFormat('M'),
+                'total' => (float)$sales,
+                'best_seller' => $bestSeller ? [
+                    'name' => $bestSeller->product_name,
+                    'sold' => (int)$bestSeller->total_sold,
+                    'image' => $bestSeller->product?->primaryImage?->image_path
+                ] : null
             ];
         }
 
