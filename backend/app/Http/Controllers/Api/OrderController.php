@@ -83,6 +83,6 @@ class OrderController extends Controller
     public function track($order_number)
     {
         $order = Order::where('order_number', $order_number)->firstOrFail();
-        return $order->load('items.product');
+        return $order->load('items.product.images', 'items.product.primaryImage');
     }
 }

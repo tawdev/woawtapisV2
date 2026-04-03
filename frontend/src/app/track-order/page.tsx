@@ -196,8 +196,12 @@ export default function TrackOrderPage() {
                                         {order.items?.map((item: any, idx: number) => (
                                             <div key={idx} className="flex gap-4 items-center">
                                                 <div className="w-12 h-16 bg-stone-50 rounded-lg overflow-hidden shrink-0">
-                                                    {item.product?.image ? (
-                                                        <img src={getImageUrl(item.product.image)} className="w-full h-full object-cover" alt="" />
+                                                    {item.product?.primary_image || item.product?.images?.length ? (
+                                                        <img 
+                                                            src={getImageUrl(item.product?.primary_image?.image_path || item.product?.images?.[0]?.image_path)} 
+                                                            className="w-full h-full object-cover" 
+                                                            alt="" 
+                                                        />
                                                     ) : (
                                                         <div className="w-full h-full flex items-center justify-center text-stone-200"><ShoppingBag size={14} /></div>
                                                     )}
