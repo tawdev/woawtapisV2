@@ -23,7 +23,16 @@ jobs:
             set -e
             
             # Go to project directory (Trying most likely names)
-            cd /var/www/woawTapisV2
+            if [ -d "/var/www/woawTapisV2" ]; then
+              cd /var/www/woawTapisV2
+            elif [ -d "/var/www/woawtapisV2" ]; then
+              cd /var/www/woawtapisV2
+            elif [ -d "/var/www/woawTapis" ]; then
+              cd /var/www/woawTapis
+            else
+              echo "Error: Project directory not found in /var/www/"
+              exit 1
+            fi
             
             # Update code
             git pull origin main
