@@ -7,6 +7,7 @@ on:
 
 jobs:
   deploy:
+    name: Deploy to Hostinger VPS
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -38,6 +39,9 @@ jobs:
             cd ../frontend
             npm install --legacy-peer-deps
             npm run build
+            
+            # Restart or Start the application with PM2
+            echo "--- Restarting PM2 Process ---"
             pm2 restart wowtapis-front || pm2 start npm --name wowtapis-front -- start
             
             echo "Deployment successful!"
