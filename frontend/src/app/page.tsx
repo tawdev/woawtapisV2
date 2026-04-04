@@ -9,11 +9,16 @@ import Image from 'next/image';
 import { productService, contactService } from '@/services/api';
 
 import { useRouter } from 'next/navigation';
-import { Truck, Wrench, Gem, Send, Loader2, CheckCircle2, ChevronRight, X } from 'lucide-react';
+import { Truck, Wrench, Gem, Send, Loader2, CheckCircle2, ChevronRight, X, Star, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Home() {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Newsletter State
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success'>('idle');
 
   // Contact Form State
   const [contactLoading, setContactLoading] = useState(false);
@@ -77,6 +82,17 @@ export default function Home() {
     }
   ];
 
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterStatus('loading');
+    setTimeout(() => {
+      setNewsletterStatus('success');
+      setNewsletterEmail('');
+      setTimeout(() => setNewsletterStatus('idle'), 4000);
+    }, 1200);
+  };
+
   const handleCollectionClick = (col: typeof collections[0]) => {
     setSelectedCollection({ 
       id: col.id, 
@@ -89,6 +105,17 @@ export default function Home() {
     router.push(`/products?category=${catId}`);
     setSelectedCollection(null);
   };
+
+  // Prevent background scrolling when a modal is open
+  useEffect(() => {
+    if (selectedCollection) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    // Cleanup on unmount
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [selectedCollection]);
 
 
   useEffect(() => {
@@ -118,7 +145,7 @@ export default function Home() {
       await contactService.sendMessage(formData);
       
       // 2. Format WhatsApp Message
-      const whatsappNumber = "212607790956"; // Clean number without +
+      const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP || "212607790956"; // Use ENV variable if present
       const text = `Bonjour TAW 10,\n\nNouveau message de contact :\n\n*Nom:* ${formData.name}\n*Email:* ${formData.email}\n*Sujet:* ${formData.subject}\n*Message:* ${formData.message}`;
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
       
@@ -136,6 +163,17 @@ export default function Home() {
     }
   };
 
+  const testimonials = [
+    { name: "Sophie M.", city: "Paris", text: "Le tapis sur-mesure est de loin l'élément central de notre salon. Une laine d'une douceur absolue et des finitions parfaites.", rating: 5 },
+    { name: "Youssef T.", city: "Marrakech", text: "Service conciergerie incroyable. Ils ont su donner vie à mon idée avec des teintes impossibles à trouver ailleurs.", rating: 5 },
+    { name: "Clara D.", city: "Genève", text: "La collection Vintage est époustouflante. L'authenticité donne une âme unique à ma décoration d'intérieur.", rating: 5 }
+  ];
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: 40 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } }
+  };
+
   return (
     <>
       <Header transparent />
@@ -143,7 +181,10 @@ export default function Home() {
       <main>
         <Hero />
          {/* À Propos Section */}
-        <section className="py-32 bg-white overflow-hidden">
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="py-32 bg-white overflow-hidden"
+        >
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
               <div className="relative group">
@@ -188,10 +229,13 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Collections Section */}
-        <section className="py-24 bg-stone-50 border-t border-stone-200">
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="py-24 bg-stone-50 border-t border-stone-200"
+        >
           <div className="container mx-auto px-4">
             <div className="text-center mb-16 space-y-4">
               <h2 className="text-primary uppercase tracking-[0.2em] text-sm font-bold">Nos Univers</h2>
@@ -227,7 +271,7 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* Sub-choice Modal */}
         {selectedCollection && (
@@ -275,7 +319,10 @@ export default function Home() {
         )}
 
         {/* Featured Products Section */}
-        <section className="py-24 bg-white">
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="py-24 bg-white"
+        >
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
               <div className="space-y-4">
@@ -293,21 +340,99 @@ export default function Home() {
                   <div key={i} className="aspect-square bg-stone-100 rounded-sm" />
                 ))}
               </div>
-            ) : (
+            ) : featuredProducts.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {featuredProducts.slice(0, 4).map((product: any) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
+            ) : (
+              <div className="py-20 text-center border-2 border-dashed border-stone-100 rounded-sm">
+                 <p className="text-stone-400 font-serif italic text-xl">Aucune pièce maîtresse n'est actuellement disponible.</p>
+              </div>
             )}
           </div>
-        </section>
+        </motion.section>
 
+        {/* Testimonials Section */}
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="py-24 bg-stone-50"
+        >
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16 space-y-4">
+              <h2 className="text-primary uppercase tracking-[0.2em] text-sm font-bold">Confiance & Prestige</h2>
+              <h3 className="text-4xl md:text-5xl font-serif font-bold italic">Avis de nos Clients</h3>
+              <div className="h-1 w-16 bg-primary mx-auto" />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {testimonials.map((testi, idx) => (
+                <div key={idx} className="bg-white p-8 rounded-sm shadow-sm border border-stone-100 hover:shadow-xl transition-all duration-300">
+                  <div className="flex text-primary mb-6">
+                    {[...Array(testi.rating)].map((_, i) => (
+                      <Star key={i} size={16} fill="currentColor" />
+                    ))}
+                  </div>
+                  <p className="text-stone-600 font-light italic text-lg mb-6 leading-relaxed">"{testi.text}"</p>
+                  <div className="flex items-center gap-3 border-t border-stone-50 pt-6 mt-auto">
+                    <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center font-serif italic text-primary">
+                      {testi.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold text-stone-900 text-sm">{testi.name}</p>
+                      <p className="text-xs uppercase tracking-widest text-stone-400 font-black">{testi.city}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
 
-       
+        {/* Instagram UGC / Gallery Section */}
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="pb-24 pt-12 bg-stone-50 overflow-hidden"
+        >
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-8">
+              <div className="space-y-4">
+                <h2 className="text-primary uppercase tracking-[0.2em] text-sm font-bold">Inspiration</h2>
+                <h3 className="text-4xl md:text-5xl font-serif font-bold italic">Dans vos intérieurs</h3>
+              </div>
+              <a href="https://instagram.com/waootapis" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-[10px] uppercase tracking-widest font-black text-stone-900 border-b-2 border-stone-900 pb-1 hover:text-primary hover:border-primary transition-all">
+                @waootapis sur Instagram
+                <ArrowRight size={14} />
+              </a>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { src: "/images/hero-carpet.jpg", likes: "1.2k" },
+                { src: "/images/product-categories/moderne.webp", likes: "856" },
+                { src: "/images/product-categories/berbere.webp", likes: "2.4k" },
+                { src: "/images/product-categories/vintage.webp", likes: "942" }
+              ].map((img, i) => (
+                <div key={i} className="group relative aspect-square bg-stone-200 overflow-hidden rounded-xl shadow-sm">
+                  <img src={img.src} alt={`Instagram feed ${i}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-stone-900/0 group-hover:bg-stone-900/60 transition-colors duration-500 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100">
+                    <p className="text-white text-xs font-black uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <Star size={14} fill="currentColor" /> {img.likes}
+                    </p>
+                    <span className="text-white text-[10px] italic font-serif">Voir la publication</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
 
         {/* Contact Section */}
-        <section className="py-32 bg-stone-900 text-white relative overflow-hidden">
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="py-32 bg-stone-900 text-white relative overflow-hidden"
+        >
           <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5" />
           <div className="container mx-auto px-4 relative z-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
@@ -435,10 +560,51 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
+
+        {/* Newsletter Section */}
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="py-24 bg-white border-y border-stone-100"
+        >
+          <div className="container mx-auto px-4 text-center max-w-2xl">
+            <h2 className="text-primary uppercase tracking-[0.3em] text-[10px] font-bold mb-4">Newsletter</h2>
+            <h3 className="text-4xl font-serif font-bold italic mb-6">Rejoignez notre cercle</h3>
+            <p className="text-stone-500 font-light mb-8">
+              Inscrivez-vous pour découvrir nos nouvelles collections et bénéficiez de conseils d'experts ainsi que d'offres exclusives.
+            </p>
+            {newsletterStatus === 'success' ? (
+              <div className="bg-emerald-50 text-emerald-600 px-6 py-4 rounded-sm border border-emerald-100 font-bold flex items-center justify-center gap-3 animate-in fade-in zoom-in duration-500">
+                <CheckCircle2 size={20} />
+                Merci ! Vous faites maintenant partie de notre cercle restreint.
+              </div>
+            ) : (
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4">
+                <input 
+                  type="email" 
+                  required
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  placeholder="Votre adresse e-mail" 
+                  className="flex-1 bg-stone-50 border border-stone-200 px-6 py-4 outline-none focus:border-primary transition-colors font-serif italic"
+                />
+                <button 
+                  disabled={newsletterStatus === 'loading'}
+                  className="px-8 py-4 bg-stone-900 text-white font-bold uppercase tracking-widest text-[10px] hover:bg-primary transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                >
+                  {newsletterStatus === 'loading' ? <Loader2 size={16} className="animate-spin" /> : 'Souscrire'}
+                </button>
+              </form>
+            )}
+            <p className="text-[10px] uppercase text-stone-400 font-black mt-6 tracking-widest">* Vous pouvez vous désabonner à tout moment.</p>
+          </div>
+        </motion.section>
         
         {/* Benefits Section */}
-        <section className="py-24 bg-stone-100 border-y border-stone-200">
+        <motion.section 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-10px" }} variants={fadeUp}
+          className="py-24 bg-stone-100 border-b border-stone-200"
+        >
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
               <div className="space-y-4">
@@ -464,7 +630,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
       </main>
 
       <Footer />

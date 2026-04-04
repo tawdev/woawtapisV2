@@ -10,42 +10,112 @@ import {
     ArrowLeft, 
     ShoppingBag, 
     ArrowUpRight,
+    ArrowDownRight,
     BarChart3,
     History,
     Download,
     ChevronLeft,
     ChevronRight,
-    FileText
+    FileText,
+    Users,
+    TableProperties
 } from 'lucide-react';
 import Link from 'next/link';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+
+interface AnalyticsData {
+    monthly_sales?: any[];
+    recent_orders?: any[];
+    [key: string]: any;
+}
 
 export default function AnalyticsPage() {
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<AnalyticsData | null>(null);
+    const [allStats, setAllStats] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [pickerOpen, setPickerOpen] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
 
-    // Default to current month and year
-    const now = new Date();
-    const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
-    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-    const [pickerYear, setPickerYear] = useState(now.getFullYear());
-
-    const fetchStats = async () => {
-        setLoading(true);
-        try {
-            const response = await adminService.getStats(selectedMonth, selectedYear);
-            setStats(response.data);
-        } catch (error) {
-            console.error('Failed to fetch stats:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // Default to current month and year using lazy initialization
+    const [selectedMonth, setSelectedMonth] = useState(() => new Date().getMonth() + 1);
+    const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+    const [pickerYear, setPickerYear] = useState(() => new Date().getFullYear());
 
     useEffect(() => {
+        const fetchStats = async () => {
+            // Seul le premier chargement affiche le squelette, les suivants font juste clignoter l'opacité
+            if (!stats) setLoading(true);
+            else setIsRefreshing(true);
+            
+            try {
+                const [resMonth, resAll] = await Promise.all([
+                    adminService.getStats(selectedMonth, selectedYear),
+                    adminService.getStats()
+                ]);
+                setStats(resMonth.data);
+                setAllStats(resAll.data);
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+            } finally {
+                setLoading(false);
+                setIsRefreshing(false);
+            }
+        };
+
         fetchStats();
     }, [selectedMonth, selectedYear]);
+
+    // CSV Download Function
+    const handleExportCSV = () => {
+        if (!stats?.recent_orders) return;
+        const headers = ["ID Commande", "Client", "Ville", "Date", "Montant (MAD)", "Statut"];
+        const rows = stats.recent_orders.map((o: any) => [
+            `#${o.order_number}`,
+            `"${o.customer_name}"`,
+            `"${o.customer_city}"`,
+            new Date(o.created_at).toLocaleDateString('fr-FR'),
+            o.total_amount,
+            o.status
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Export_Commandes_${selectedMonth}_${selectedYear}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    // Calculate Growth logic
+    const calculateGrowth = () => {
+        if (!allStats?.monthly_sales) return { value: 0, isPositive: true };
+        const currentData = stats?.monthly_sales?.[0]?.total || 0;
+        
+        // Find previous month using the comprehensive list
+        const allSales = allStats.monthly_sales;
+        if (allSales.length >= 2) {
+            // we compare with the 2nd to last element of global stats representing prior month usually
+            const previousData = allSales[allSales.length - 2]?.total || 1; 
+            const diff = ((currentData - previousData) / previousData) * 100;
+            return { value: Math.abs(diff), isPositive: diff >= 0 };
+        }
+        return { value: 0, isPositive: true };
+    };
+    const growth = calculateGrowth();
+
+    // Calculate Top Clients from recent orders
+    const getTopClients = () => {
+        if (!stats?.recent_orders) return [];
+        const clients: any = {};
+        stats.recent_orders.forEach((o: any) => {
+            if (!clients[o.customer_name]) clients[o.customer_name] = { name: o.customer_name, city: o.customer_city, total: 0, orders: 0 };
+            clients[o.customer_name].total += parseFloat(o.total_amount || 0);
+            clients[o.customer_name].orders += 1;
+        });
+        return Object.values(clients).sort((a: any, b: any) => b.total - a.total).slice(0, 3);
+    };
 
     // Close picker on outside click
     useEffect(() => {
@@ -97,7 +167,7 @@ export default function AnalyticsPage() {
     const currentMonthData = stats?.monthly_sales?.[0];
 
     return (
-        <div className="space-y-12 pb-24 mx-auto print:space-y-6 print:pb-0">
+        <div className={`space-y-12 pb-24 mx-auto print:space-y-6 print:pb-0 transition-opacity duration-300 ${isRefreshing ? 'opacity-50 pointer-events-none' : ''}`}>
             {/* Global Print Styles */}
             <style jsx global>{`
                 @media print {
@@ -199,8 +269,9 @@ export default function AnalyticsPage() {
                                     {/* Month grid */}
                                     <div className="grid grid-cols-4 gap-2 p-4">
                                         {monthShort.map((m, i) => {
+                                            const currentDate = new Date();
                                             const isSel = i + 1 === selectedMonth && pickerYear === selectedYear;
-                                            const isCurrent = i + 1 === now.getMonth() + 1 && pickerYear === now.getFullYear();
+                                            const isCurrent = i + 1 === currentDate.getMonth() + 1 && pickerYear === currentDate.getFullYear();
                                             return (
                                                 <button
                                                     key={i}
@@ -222,6 +293,13 @@ export default function AnalyticsPage() {
                             )}
                         </div>
 
+                        <button 
+                            onClick={handleExportCSV}
+                            className="flex items-center gap-2 px-6 py-4 bg-stone-900 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl hover:bg-stone-800 hover:scale-[1.03] active:scale-95 transition-all group lg:no-print"
+                        >
+                            <TableProperties size={18} className="group-hover:translate-y-0.5 transition-transform" /> 
+                            Export CSV
+                        </button>
                         <button 
                             onClick={handleDownloadPDF}
                             className="flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 hover:scale-[1.03] active:scale-95 transition-all group lg:no-print"
@@ -298,16 +376,76 @@ export default function AnalyticsPage() {
                                     <h3 className="text-6xl font-playfair font-bold text-stone-900 capitalize italic tracking-tight">{currentMonthData.name}</h3>
                                     <p className="text-[11px] font-black text-stone-400 uppercase tracking-[0.3em]">Performance du catalogue d'exception</p>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-right flex flex-col items-end">
                                     <div className="text-xs font-black text-stone-300 uppercase tracking-widest mb-2 text-right">Volume Transactionnel</div>
                                     <div className="text-5xl font-bold text-stone-900 tracking-tighter">
                                         {currentMonthData.total?.toLocaleString()}
                                         <span className="text-sm text-stone-400 ml-2 font-bold uppercase tracking-widest italic">MAD</span>
                                     </div>
+                                    {growth.value > 0 && (
+                                        <div className={`mt-3 flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold ${growth.isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+                                            {growth.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                                            {growth.isPositive ? '+' : '-'}{growth.value.toFixed(1)}% vs mois précédent
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            <div className="space-y-12">
+                            {/* Section: Recharts Evolution & Top Clients */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 pt-4">
+                                <div className="lg:col-span-2 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-lg font-bold text-stone-900 italic">Évolution sur 6 Mois</h4>
+                                        <span className="text-[10px] font-black uppercase text-stone-400 tracking-widest bg-stone-50 px-3 py-1 rounded">Global</span>
+                                    </div>
+                                    <div className="h-[250px] w-full">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={allStats?.monthly_sales || []} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                                <defs>
+                                                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f4" />
+                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#a8a29e', fontWeight: 900 }} />
+                                                <Tooltip 
+                                                    contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                                                    cursor={{ stroke: '#e7e5e4', strokeWidth: 2 }}
+                                                />
+                                                <Area type="monotone" dataKey="total" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between border-b border-stone-50 pb-4">
+                                        <div className="flex items-center gap-3">
+                                            <Users size={18} className="text-stone-900" />
+                                            <h4 className="text-lg font-bold text-stone-900 italic">Top Clients</h4>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4 pt-2">
+                                        {getTopClients().map((client: any, i: number) => (
+                                            <div key={i} className="flex items-center justify-between p-4 bg-stone-50 rounded-2xl hover:bg-stone-100 transition-colors">
+                                                <div className="space-y-1">
+                                                    <p className="text-sm font-bold text-stone-900">{client.name}</p>
+                                                    <p className="text-[10px] uppercase font-black text-stone-400">📍 {client.city} • {client.orders} cmds</p>
+                                                </div>
+                                                <p className="text-sm font-bold text-emerald-600">{client.total.toLocaleString()} MAD</p>
+                                            </div>
+                                        ))}
+                                        {getTopClients().length === 0 && (
+                                            <div className="p-8 text-center bg-stone-50 rounded-2xl border-2 border-dashed border-stone-100">
+                                                <p className="text-xs font-black uppercase text-stone-400 italic tracking-widest">Données insuffisantes</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-8 space-y-8 border-t border-stone-50 mt-8">
+                                <h4 className="text-xl font-bold text-stone-900 italic mb-6">Produits Phares du Mois</h4>
                                 {currentMonthData.top_products && currentMonthData.top_products.length > 0 ? (
                                     currentMonthData.top_products.map((product: any, pIdx: number) => {
                                         const maxInMonth = Math.max(...currentMonthData.top_products.map((p: any) => p.sold)) || 1;

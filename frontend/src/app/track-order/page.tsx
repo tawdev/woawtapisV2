@@ -154,8 +154,19 @@ function TrackOrderContent() {
                             </div>
                         </div>
 
-                        {/* Download Action */}
-                        <div className="flex justify-end no-print">
+                        {/* Actions */}
+                        <div className="flex flex-wrap justify-end gap-4 no-print">
+                            {order.status === 'pending' && (
+                                <a 
+                                    href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP?.replace('+', '') || '212600000000'}?text=${encodeURIComponent(`Bonjour, je souhaite modifier/annuler ma commande \nNuméro: #${order.order_number}`)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 bg-red-50 text-red-600 border border-red-100 px-8 py-4 rounded-2xl font-bold hover:bg-red-100 transition-all shadow-sm group"
+                                >
+                                    <AlertCircle size={16} className="text-red-400 group-hover:text-red-600 transition-colors" />
+                                    <span className="text-[10px] uppercase tracking-widest italic">Modifier / Annuler</span>
+                                </a>
+                            )}
                             <button 
                                 onClick={() => window.print()}
                                 className="flex items-center gap-3 bg-white text-stone-900 border border-stone-200 px-8 py-4 rounded-2xl font-bold hover:bg-stone-50 transition-all shadow-sm group"
@@ -288,7 +299,7 @@ function TrackOrderContent() {
                         <Link href="/contact" className="px-8 py-4 bg-white text-stone-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all">
                             Nous Contacter
                         </Link>
-                        <a href="https://wa.me/212600000000" className="px-8 py-4 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600/30 transition-all">
+                        <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP?.replace('+', '') || '212600000000'}`} className="px-8 py-4 bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-600/30 transition-all">
                             Parler sur WhatsApp
                         </a>
                     </div>
