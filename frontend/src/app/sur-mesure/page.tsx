@@ -41,46 +41,72 @@ export default function SurMesurePage() {
   const [priceEstimate, setPriceEstimate] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [honeypot, setHoneypot] = useState('');
 
   useEffect(() => {
     const area = (formData.width * formData.length) / 10000;
     setPriceEstimate(Math.round(area * formData.style.price));
   }, [formData.style, formData.width, formData.length]);
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Email Regex
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    // Phone Regex (Maroc + International basic)
+    const phoneRegex = /^(?:\+212|0)([5-7])\d{8}$|^(\+?\d{1,4}[- ]?)?\(?\d{1,4}?\)?[- ]?\d{1,4}[- ]?\d{1,4}$/;
+
+    if (!formData.name.trim() || formData.name.length < 3) {
+      newErrors.name = "Nom invalide (min. 3 caractères)";
+    }
+    
+    if (!emailRegex.test(formData.email)) {
+      newErrors.email = "Adresse e-mail non valide";
+    }
+
+    if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
+      newErrors.phone = "Numéro de téléphone invalide";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
   const handlePrev = () => setCurrentStep(prev => Math.max(prev - 1, 0));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.phone) {
-        alert("Veuillez remplir tous les champs de contact pour initialiser votre projet.");
+    
+    // Antispam Honeypot
+    if (honeypot) {
+        console.warn("Spam detected");
         return;
     }
 
+    if (!validateForm()) return;
+
     setLoading(true);
     try {
-        // Envoi au backend
         const leadData = {
             subject: `PROJET SUR MESURE: ${formData.style.name}`,
-            message: `Demande de tapis sur mesure.\nStyle: ${formData.style.name}\nDimensions: ${formData.width}x${formData.length} CM\nTeinte: ${formData.color.name}\nTotal estimé: ${priceEstimate} MAD\nNotes: ${formData.notes}`,
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone
+            message: `Demande de tapis sur mesure.\nStyle: ${formData.style.name}\nDimensions: ${formData.width}x${formData.length} CM\nTeinte: ${formData.color.name}\nTotal estimé: ${priceEstimate} MAD\nNotes: ${formData.notes.substring(0, 1000)}`,
+            name: formData.name.trim(),
+            email: formData.email.trim().toLowerCase(),
+            phone: formData.phone.trim()
         };
 
         await contactService.sendMessage(leadData);
-
-        // Success state
         setIsSuccess(true);
 
-        // WhatsApp redirect as backup/direct contact
         const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP || "212607790956";
-        const msg = `Bonjour TAW 10,\n\nJe souhaite initialiser un projet de tapis sur mesure avec les détails suivants :\n\n- Style: ${formData.style.name}\n- Dimensions: ${formData.width}x${formData.length} cm\n- Couleur: ${formData.color.name}\n- Prix estimé: ${priceEstimate} MAD\n- Nom: ${formData.name}\n\nMerci de me recontacter pour finaliser.`;
+        const msg = `Bonjour WOW TAPIS,\n\nJe souhaite initialiser un projet de tapis sur mesure (Inspiration: ${formData.style.name}).\n\n- Dimensions: ${formData.width}x${formData.length} cm\n- Couleur: ${formData.color.name}\n- Prix estimé: ${priceEstimate} MAD\n- Nom: ${formData.name}\n\nMerci de me recontacter pour finaliser.`;
         window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
 
     } catch (err) {
         console.error("Submission error:", err);
-        alert("Une erreur est survenue lors de l'initialisation. Veuillez réessayer.");
+        setErrors({ submit: "Une erreur est survenue lors de l'envoi. Veuillez réessayer." });
     } finally {
         setLoading(false);
     }
@@ -268,38 +294,46 @@ export default function SurMesurePage() {
                             </div>
                             <form onSubmit={handleSubmit} className="space-y-6 relative">
                             <div className="absolute -inset-4 bg-stone-50/50 rounded-[3rem] -z-10" />
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="relative group">
+                            
+                            {/* Honeypot field - Keep it invisible */}
+                            <div className="hidden" aria-hidden="true">
+                                <input type="text" value={honeypot} onChange={(e) => setHoneypot(e.target.value)} tabIndex={-1} autoComplete="off" />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
                                     <input 
                                         type="text" 
-                                        required 
                                         value={formData.name}
                                         onChange={(e) => setFormData({...formData, name: e.target.value})}
                                         placeholder="Prénom & NOM" 
-                                        className="w-full bg-white border border-stone-100 p-6 rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/5 focus:border-stone-900 outline-none transition-all" 
+                                        className={`w-full bg-white border ${errors.name ? 'border-red-500 ring-2 ring-red-500/10' : 'border-stone-100'} p-6 rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/5 focus:border-stone-900 outline-none transition-all`} 
                                     />
+                                    {errors.name && <p className="text-[10px] text-red-500 font-bold ml-2 italic tracking-tight">{errors.name}</p>}
                                 </div>
-                                <div className="relative group">
+                                <div className="space-y-2">
                                     <input 
                                         type="email" 
-                                        required 
                                         value={formData.email}
                                         onChange={(e) => setFormData({...formData, email: e.target.value})}
                                         placeholder="Adresse E-mail" 
-                                        className="w-full bg-white border border-stone-100 p-6 rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/5 focus:border-stone-900 outline-none transition-all" 
+                                        className={`w-full bg-white border ${errors.email ? 'border-red-500 ring-2 ring-red-500/10' : 'border-stone-100'} p-6 rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/5 focus:border-stone-900 outline-none transition-all`} 
                                     />
+                                    {errors.email && <p className="text-[10px] text-red-500 font-bold ml-2 italic tracking-tight">{errors.email}</p>}
                                 </div>
                             </div>
-                            <div className="relative group">
+                            <div className="space-y-2">
                                 <input 
                                     type="tel" 
-                                    required 
                                     value={formData.phone}
                                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                                    placeholder="Numéro de téléphone (WhatsApp)" 
-                                    className="w-full bg-white border border-stone-100 p-6 rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/5 focus:border-stone-900 outline-none transition-all" 
+                                    placeholder="Numéro de téléphone (Ex : 0612345678)" 
+                                    className={`w-full bg-white border ${errors.phone ? 'border-red-500 ring-2 ring-red-500/10' : 'border-stone-100'} p-6 rounded-2xl text-xs font-bold focus:ring-4 focus:ring-primary/5 focus:border-stone-900 outline-none transition-all`} 
                                 />
+                                {errors.phone && <p className="text-[10px] text-red-500 font-bold ml-2 italic tracking-tight">{errors.phone}</p>}
                             </div>
+
+                            {errors.submit && <p className="p-4 bg-red-50 border border-red-100 text-red-600 text-[10px] uppercase font-black tracking-widest text-center rounded-xl">{errors.submit}</p>}
                             <button 
                                 disabled={loading}
                                 className="w-full bg-[#1C1917] text-white p-7 rounded-[1.5rem] font-black uppercase tracking-[0.4em] text-[10px] flex items-center justify-between hover:bg-stone-800 hover:-translate-y-1 transition-all shadow-2xl group cursor-pointer mt-8 relative overflow-hidden"
