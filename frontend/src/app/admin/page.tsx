@@ -20,7 +20,8 @@ import {
     Zap,
     CheckCircle,
     Users,
-    Bell
+    Bell,
+    Layers
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -94,13 +95,14 @@ export default function AdminDashboard() {
             iconBg: 'bg-purple-500 text-white shadow-purple-200'
         },
         {
-            label: 'Nouveaux Messages',
-            value: stats?.messages_count,
-            sub: 'Réponse moyenne: 2h',
-            icon: MessageSquare,
-            trend: 'down',
+            label: 'Projets Sur-Mesure',
+            value: stats?.sur_mesure_count || 0,
+            sub: 'Demandes artisanales',
+            icon: Layers,
+            trend: 'up',
             gradient: 'from-amber-50 to-amber-100/30',
-            iconBg: 'bg-amber-500 text-white shadow-amber-200'
+            iconBg: 'bg-amber-500 text-white shadow-amber-200',
+            href: '/admin/sur-mesure'
         },
     ];
 
@@ -127,28 +129,44 @@ export default function AdminDashboard() {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {cards.map((card, i) => (
-                    <div key={i} className={`relative overflow-hidden bg-white p-7 rounded-[2rem] border border-stone-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group`}>
-                        <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity`}></div>
-                        
-                        <div className="relative z-10">
-                            <div className={`w-11 h-11 rounded-2xl ${card.iconBg} flex items-center justify-center mb-5 shadow-lg`}>
-                                <card.icon className="w-5 h-5" />
-                            </div>
-                            <div className="space-y-1">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-black text-stone-400 uppercase tracking-widest">{card.label}</p>
-                                    {card.trend === 'up' && <ArrowUpRight className="w-4 h-4 text-emerald-500" />}
-                                    {card.trend === 'down' && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+                {cards.map((card, i) => {
+                    const CardContent = (
+                        <div className={`relative h-full overflow-hidden bg-white p-7 rounded-[2rem] border border-stone-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group`}>
+                            <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+                            
+                            <div className="relative z-10">
+                                <div className={`w-11 h-11 rounded-2xl ${card.iconBg} flex items-center justify-center mb-5 shadow-lg`}>
+                                    <card.icon className="w-5 h-5" />
                                 </div>
-                                <h3 className="text-3xl font-bold text-stone-900 tracking-tight">{card.value}</h3>
-                                <p className="text-[11px] font-bold text-stone-400 flex items-center gap-1">
-                                    {card.sub}
-                                </p>
+                                <div className="space-y-1">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs font-black text-stone-400 uppercase tracking-widest">{card.label}</p>
+                                        {card.trend === 'up' && <ArrowUpRight className="w-4 h-4 text-emerald-500" />}
+                                        {card.trend === 'down' && <ArrowDownRight className="w-4 h-4 text-red-500" />}
+                                    </div>
+                                    <h3 className="text-3xl font-bold text-stone-900 tracking-tight">{card.value}</h3>
+                                    <p className="text-[11px] font-bold text-stone-400 flex items-center gap-1">
+                                        {card.sub}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+
+                    if (card.href) {
+                        return (
+                            <Link key={i} href={card.href} className="block group transition-all duration-500 h-full">
+                                {CardContent}
+                            </Link>
+                        );
+                    }
+
+                    return (
+                        <div key={i} className="block h-full">
+                            {CardContent}
+                        </div>
+                    );
+                })}
             </div>
 
             {/* Quick Actions Section */}
@@ -301,10 +319,17 @@ export default function AdminDashboard() {
                             </div>
                             <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors cursor-pointer border border-white/5">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-2 h-2 rounded-full ${stats?.messages_count > 0 ? 'bg-amber-400' : 'bg-stone-500'}`} />
-                                    <span className="text-sm font-medium text-stone-200">Nouveaux messages</span>
+                                    <div className={`w-2 h-2 rounded-full ${stats?.messages_count > 0 ? 'bg-stone-300' : 'bg-stone-500'}`} />
+                                    <span className="text-sm font-medium text-stone-200">Messages contact</span>
                                 </div>
                                 <span className="text-lg font-bold text-white">{stats?.messages_count || 0}</span>
+                            </div>
+                            <div className="flex items-center justify-between p-4 bg-white/8 rounded-2xl hover:bg-white/15 transition-colors cursor-pointer border border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-2 h-2 rounded-full ${stats?.sur_mesure_count > 0 ? 'bg-amber-400 animate-pulse' : 'bg-stone-500'}`} />
+                                    <span className="text-sm font-bold text-amber-200">Inspirations Sur-Mesure</span>
+                                </div>
+                                <span className="text-xl font-black text-amber-400">{stats?.sur_mesure_count || 0}</span>
                             </div>
                         </div>
                     </div>

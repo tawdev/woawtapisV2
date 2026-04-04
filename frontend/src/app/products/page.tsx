@@ -17,8 +17,10 @@ import {
     ChevronRight as ChevronRightIcon,
     ArrowRight,
     X,
-    Filter
+    Filter,
+    Loader2
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Skeleton component for loading state
 const ProductsPageSkeleton = () => (
@@ -141,6 +143,37 @@ function ProductsContent() {
         params.set('page', '1');
         router.push(`/products?${params.toString()}`);
     };
+
+    const toggleColor = (color: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        const currentColors = new Set(selectedColors);
+        const lowerColor = color.toLowerCase();
+        
+        if (currentColors.has(lowerColor)) {
+            currentColors.delete(lowerColor);
+        } else {
+            currentColors.add(lowerColor);
+        }
+        
+        if (currentColors.size > 0) {
+            params.set('colors', Array.from(currentColors).join(','));
+        } else {
+            params.delete('colors');
+        }
+        params.set('page', '1');
+        router.push(`/products?${params.toString()}`);
+    };
+
+    const colorOptions = [
+        { name: 'Rouge', hex: '#be185d' },
+        { name: 'Bleu', hex: '#1e3a8a' },
+        { name: 'Vert', hex: '#166534' },
+        { name: 'Noir', hex: '#1c1917' },
+        { name: 'Blanc', hex: '#ffffff' },
+        { name: 'Beige', hex: '#eaddcf' },
+        { name: 'Rose', hex: '#fda4af' },
+        { name: 'Multicolore', gradient: 'conic-gradient(red, yellow, green, blue, magenta, red)' }
+    ];
 
     // Helper for pagination numbers
     const getPageNumbers = () => {
@@ -313,6 +346,49 @@ function ProductsContent() {
                                 </div>
                             )}
 
+                            {/* Couleurs */}
+                            <div className="p-8 bg-white border border-stone-100 shadow-sm rounded-2xl">
+                                <div className="flex justify-between items-center mb-6 pb-4 border-b border-stone-100">
+                                    <h3 className="text-xs uppercase tracking-[0.3em] font-black text-stone-900">
+                                        Nuances
+                                    </h3>
+                                    {selectedColors.length > 0 && (
+                                        <button 
+                                            onClick={() => {
+                                                const params = new URLSearchParams(searchParams.toString());
+                                                params.delete('colors');
+                                                params.set('page', '1');
+                                                router.push(`/products?${params.toString()}`);
+                                            }}
+                                            className="text-[9px] uppercase tracking-widest text-stone-400 hover:text-stone-900 font-bold"
+                                        >
+                                            Effacer
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-4 gap-3">
+                                    {colorOptions.map((color) => {
+                                        const isSelected = selectedColors.includes(color.name.toLowerCase());
+                                        return (
+                                            <button
+                                                key={color.name}
+                                                onClick={() => toggleColor(color.name)}
+                                                title={color.name}
+                                                className={`w-10 h-10 rounded-full flex items-center justify-center transform transition-all duration-300 ${isSelected ? 'scale-110 ring-2 ring-stone-900 ring-offset-2' : 'hover:scale-110 hover:shadow-md'} ${color.name === 'Blanc' ? 'border border-stone-200' : ''}`}
+                                                style={{ 
+                                                    background: color.gradient || color.hex,
+                                                    boxShadow: isSelected ? '0 10px 15px -3px rgba(0, 0, 0, 0.1)' : 'inset 0 2px 4px rgba(0,0,0,0.06)'
+                                                }}
+                                            >
+                                                {isSelected && (
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={color.name === 'Blanc' || color.name === 'Beige' ? '#000' : '#fff'} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             {/* Dimensions */}
                             <div className="p-8 bg-white border border-stone-100 shadow-sm rounded-2xl">
                                 <h3 className="text-xs uppercase tracking-[0.3em] font-black text-stone-900 mb-6 pb-4 border-b border-stone-100">
@@ -349,11 +425,35 @@ function ProductsContent() {
                     </aside>
 
                     {/* Product Grid */}
-                    <div className="flex-1">
-                        {loading ? (
+                    <div className="flex-1 relative min-h-[400px]">
+                        {/* Top progress bar for loading */}
+                        <div className="absolute top-0 left-0 right-0 h-0.5 overflow-hidden z-30">
+                            <motion.div 
+                                initial={{ x: "-100%" }}
+                                animate={{ x: loading ? "0%" : "100%" }}
+                                transition={{ 
+                                    duration: loading ? 2 : 0.5, 
+                                    ease: loading ? "linear" : "easeOut",
+                                    repeat: loading ? Infinity : 0
+                                }}
+                                className="h-full bg-primary"
+                            />
+                        </div>
+
+                        {/* Loading Overlay */}
+                        {loading && products.length > 0 && (
+                            <div className="absolute inset-0 z-20 bg-stone-50/30 backdrop-blur-[2px] flex items-center justify-center rounded-3xl transition-opacity duration-300">
+                                <div className="bg-white/80 backdrop-blur-md p-5 rounded-2xl shadow-xl flex items-center gap-4 border border-white">
+                                    <Loader2 className="w-5 h-5 text-stone-900 animate-spin" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-900">Mise à jour...</span>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {(loading && products.length === 0) ? (
                             <ProductsPageSkeleton />
                         ) : (
-                            <>
+                            <div className={`transition-all duration-500 pb-12 ${loading ? 'opacity-40 scale-[0.98]' : 'opacity-100 scale-100'}`}>
                                 <div className="flex items-center justify-between mb-12">
                                     <p className="text-stone-400 text-sm font-medium italic">
                                         <span className="text-stone-900 font-bold not-italic">{pagination.total}</span> produits d'exception trouvés
@@ -361,7 +461,7 @@ function ProductsContent() {
                                 </div>
 
                                 {products.length === 0 ? (
-                                    <div className="text-center py-32 bg-white rounded-3xl border border-stone-100">
+                                    <div className="text-center py-32 bg-white rounded-3xl border border-stone-100 shadow-sm">
                                         <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                             <Filter className="w-8 h-8 text-stone-200" />
                                         </div>
@@ -375,11 +475,27 @@ function ProductsContent() {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16">
-                                        {products.map((product) => (
-                                            <ProductCard key={product.id} product={product} />
-                                        ))}
-                                    </div>
+                                    <AnimatePresence mode="wait">
+                                        <motion.div 
+                                            key={JSON.stringify(products.map(p => p.id))}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16"
+                                        >
+                                            {products.map((product, idx) => (
+                                                <motion.div
+                                                    key={product.id}
+                                                    initial={{ opacity: 0, scale: 0.95 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ duration: 0.4, delay: idx * 0.03 }}
+                                                >
+                                                    <ProductCard product={product} />
+                                                </motion.div>
+                                            ))}
+                                        </motion.div>
+                                    </AnimatePresence>
                                 )}
 
                                 {/* Pagination */}
@@ -417,7 +533,7 @@ function ProductsContent() {
                                         </button>
                                     </div>
                                 )}
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>

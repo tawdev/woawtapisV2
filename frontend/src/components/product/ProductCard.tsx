@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { ShoppingCart, Eye, Share2 } from 'lucide-react';
+import { ShoppingCart, Eye, Share2, Ruler } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { getImageUrl } from '@/services/api';
 import SurMesureModal from './SurMesureModal';
@@ -64,13 +63,13 @@ export default function ProductCard({ product }: ProductCardProps) {
     };
 
     return (
-        <div className="group relative bg-white border border-stone-100 overflow-hidden transition-all duration-1000 hover:shadow-2xl hover:shadow-stone-200/50">
+        <div className="group relative bg-white rounded-[2rem] border border-stone-100 overflow-hidden transition-all duration-700 hover:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.08)] hover:-translate-y-1 h-full flex flex-col">
             {/* Image Container with Luxury Overlay */}
             <Link href={`/product/${product.slug}`} className="block aspect-[4/5] overflow-hidden bg-stone-100 relative">
                 <img
                     src={primaryImage}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
                     onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = '/images/placeholder.jpg';
@@ -78,28 +77,30 @@ export default function ProductCard({ product }: ProductCardProps) {
                 />
 
                 {/* Brand Overlay on Hover */}
-                <div className="absolute inset-0 bg-stone-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="absolute inset-0 bg-stone-900/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-                {hasSale && (
-                    <span className="absolute top-6 left-6 bg-primary text-white text-[9px] uppercase tracking-widest font-black px-4 py-2 shadow-2xl">
-                        Selection Noire
-                    </span>
-                )}
+                <div className="absolute inset-x-0 top-0 p-6 flex justify-between items-start z-20">
+                    {hasSale ? (
+                        <span className="bg-primary text-white text-[8px] uppercase tracking-[0.3em] font-black px-4 py-2 rounded-full shadow-2xl backdrop-blur-md">
+                            Selection Noire
+                        </span>
+                    ) : <div />}
 
-                {product.type?.name === 'sur_mesure' && (
-                    <span className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm text-stone-900 text-[9px] uppercase tracking-widest font-black px-4 py-2 shadow-2xl border border-stone-100">
-                        Sur Mesure
-                    </span>
-                )}
+                    {product.type?.name === 'sur_mesure' && (
+                        <span className="bg-white/90 backdrop-blur-md text-stone-900 text-[8px] uppercase tracking-[0.3em] font-black px-4 py-2 rounded-full shadow-2xl border border-white/20">
+                            Sur Mesure
+                        </span>
+                    )}
+                </div>
 
                 {/* Action Buttons Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0 z-20">
-                    <div className="flex items-center gap-3">
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-8 group-hover:translate-y-0 z-20">
+                    <div className="flex items-center gap-2 p-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-2xl">
                         <div 
-                            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-stone-900 hover:bg-primary hover:text-white transition-colors shadow-2xl cursor-pointer"
+                            className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-stone-900 hover:bg-primary hover:text-white transition-all shadow-xl cursor-pointer"
                             title="Voir les détails"
                         >
-                            <Eye size={18} />
+                            <Eye size={18} strokeWidth={1.5} />
                         </div>
                         
                         <button
@@ -112,18 +113,18 @@ export default function ProductCard({ product }: ProductCardProps) {
                                     addToCart(product);
                                 }
                             }}
-                            className="h-10 px-4 sm:px-6 bg-stone-900 text-white text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-primary transition-colors flex items-center gap-2 shadow-2xl rounded-full focus:outline-none"
+                            className="h-12 px-8 bg-stone-900 text-white text-[9px] uppercase tracking-[0.25em] font-black hover:bg-primary transition-all flex items-center gap-3 shadow-xl rounded-full focus:outline-none"
                         >
                             <ShoppingCart size={14} />
-                            <span className="hidden sm:inline">{product.type?.name === 'sur_mesure' ? 'Personnaliser' : 'Ajouter'}</span>
+                            <span>{product.type?.name === 'sur_mesure' ? 'Personnaliser' : 'Ajouter'}</span>
                         </button>
                         
                         <button
                             onClick={handleShare}
-                            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-stone-900 hover:bg-primary hover:text-white transition-colors shadow-2xl focus:outline-none"
+                            className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-stone-900 hover:bg-primary hover:text-white transition-all shadow-xl focus:outline-none"
                             title="Partager"
                         >
-                            <Share2 size={18} />
+                            <Share2 size={18} strokeWidth={1.5} />
                         </button>
                     </div>
                 </div>
@@ -137,60 +138,63 @@ export default function ProductCard({ product }: ProductCardProps) {
             />
 
             {/* Premium Info */}
-            <div className="p-8 space-y-4 bg-white relative z-10 text-center">
-                <div className="space-y-1">
-                    <p className="text-[9px] uppercase tracking-[0.3em] text-primary font-black">
+            <div className="p-8 space-y-6 bg-white relative z-10 flex-1 flex flex-col justify-between">
+                <div className="space-y-3 text-center">
+                    <p className="text-[9px] uppercase tracking-[0.4em] text-primary font-black opacity-80">
                         {product.category?.name || 'Artisanat Marocain'}
                     </p>
                     <Link href={`/product/${product.slug}`} className="block">
-                        <h3 className="text-xl font-serif font-bold text-stone-900 hover:text-primary transition-colors duration-500">
+                        <h3 className="text-xl font-serif font-bold text-stone-900 hover:text-primary transition-colors duration-500 italic leading-tight">
                             {product.name}
                         </h3>
                     </Link>
-                    {product.size && (
-                        <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-widest font-bold text-stone-400 bg-stone-50 border border-stone-100 px-2 py-1 rounded-sm">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 3H3v18h18V3z"/><path d="M3 9h18M9 3v18"/></svg>
-                            {product.size.replace(/x/i, ' × ')} cm
-                        </span>
-                    )}
-                </div>
-
-                <div className="flex items-center justify-center gap-4 pt-2">
-                    {hasSale ? (
-                        <>
-                            <span className="text-lg font-serif font-bold text-primary">
-                                {product.sale_price} MAD {product.type?.name === 'sur_mesure' ? '/ m²' : ''}
+                    
+                    <div className="flex items-center justify-center gap-3">
+                        {product.size && (
+                            <span className="inline-flex items-center gap-2 text-[9px] uppercase tracking-widest font-black text-stone-400 bg-stone-50 border border-stone-100/50 px-3 py-1.5 rounded-full">
+                                <Ruler size={10} />
+                                {product.size.replace(/x/i, ' × ')} cm
                             </span>
-                            <span className="text-xs text-stone-400 line-through tracking-tighter">{product.price} MAD</span>
-                        </>
-                    ) : (
-                        <span className="text-lg font-serif font-bold text-stone-900">
-                            {product.price} MAD {product.type?.name === 'sur_mesure' ? '/ m²' : ''}
-                        </span>
-                    )}
-                </div>
-
-                {/* Color Swatches */}
-                {product.color && product.color.length > 0 && (
-                    <div className="flex items-center justify-center gap-2 pt-2">
-                        {product.color.slice(0, 6).map((c: any, i: number) => {
-                            const colorName = typeof c === 'string' ? c : (c?.name || '');
-                            const hex = COLOR_MAP[colorName];
-                            if (!hex || !colorName) return null;
-                            return (
-                                <span
-                                    key={i}
-                                    title={colorName}
-                                    className="w-4 h-4 rounded-full border border-stone-200 shadow-sm"
-                                    style={{ backgroundColor: hex }}
-                                />
-                            );
-                        })}
-                        {product.color.length > 6 && (
-                            <span className="text-[9px] text-stone-400 font-bold">+{product.color.length - 6}</span>
                         )}
                     </div>
-                )}
+                </div>
+
+                <div className="flex flex-col items-center gap-4 pt-6 border-t border-stone-50">
+                    <div className="flex items-center justify-center gap-4">
+                        {hasSale ? (
+                            <>
+                                <span className="text-2xl font-playfair font-black text-primary">
+                                    {product.sale_price} <span className="text-[10px] ml-1">MAD</span>
+                                </span>
+                                <span className="text-sm text-stone-300 line-through tracking-tighter font-medium">{product.price} MAD</span>
+                            </>
+                        ) : (
+                            <span className="text-2xl font-playfair font-black text-stone-900">
+                                {product.price} <span className="text-[10px] ml-1">MAD</span>
+                                {product.type?.name === 'sur_mesure' && <span className="text-[10px] text-stone-400 font-light ml-2 italic">/ m²</span>}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Color Swatches */}
+                    {product.color && product.color.length > 0 && (
+                        <div className="flex items-center justify-center gap-1.5">
+                            {product.color.slice(0, 5).map((c: any, i: number) => {
+                                const colorName = typeof c === 'string' ? c : (c?.name || '');
+                                const hex = COLOR_MAP[colorName];
+                                if (!hex || !colorName) return null;
+                                return (
+                                    <div
+                                        key={i}
+                                        title={colorName}
+                                        className="w-2.5 h-2.5 rounded-full ring-2 ring-transparent ring-offset-2 transition-all hover:ring-primary cursor-help"
+                                        style={{ backgroundColor: hex }}
+                                    />
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

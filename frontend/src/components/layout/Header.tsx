@@ -79,12 +79,23 @@ export default function Header({ transparent = false }: HeaderProps) {
 
     return (
         <>
-            <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerBg}`}>
+            {/* Announcement Bar */}
+            <div className={`bg-stone-900 text-white py-1.5 text-center text-[9px] uppercase tracking-[0.4em] font-black z-[70] sticky top-0 transition-all duration-500 ${isScrolled ? 'h-0 opacity-0 -translate-y-full' : 'h-auto opacity-100'}`}>
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center justify-center gap-3"
+                >
+                    <span className="text-primary text-xs">◈</span> Livraison gratuite au Maroc dès 2000 DH <span className="text-primary text-xs">◈</span>
+                </motion.p>
+            </div>
+
+            <header className={`fixed ${isScrolled ? 'top-0' : 'top-8'} left-0 right-0 z-50 transition-all duration-700 ${headerBg}`}>
                 <div className="container mx-auto px-4 flex justify-between items-center">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <div className="w-10 h-10 bg-stone-900 rounded-full flex items-center justify-center text-primary font-serif font-bold text-xl group-hover:scale-110 transition-transform duration-500 border border-white/10">W</div>
-                        <span className={`text-2xl font-serif font-bold tracking-tighter transition-colors duration-500 ${textColor}`}>WOW TAPIS</span>
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <div className="w-9 h-9 bg-stone-900 rounded-full flex items-center justify-center text-primary font-serif font-bold text-lg group-hover:scale-105 transition-all duration-500 border border-white/5 shadow-lg shadow-black/10">W</div>
+                        <span className={`text-xl font-serif font-black tracking-[-0.05em] transition-colors duration-500 ${textColor}`}>WOW TAPIS</span>
                     </Link>
 
                     {/* Desktop Navigation */}
@@ -92,7 +103,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                         {['Accueil', 'Nos Tapis', 'Sur Mesure', 'Suivi Commande', 'Contact'].map((item: string) => {
                             const href = item === 'Accueil' ? '/' :
                                 item === 'Nos Tapis' ? '/products' :
-                                    item === 'Sur Mesure' ? '/products?type=sur_mesure' :
+                                    item === 'Sur Mesure' ? '/sur-mesure' :
                                         item === 'Suivi Commande' ? '/track-order' : '/contact';
                             return (
                                 <Link
@@ -114,7 +125,7 @@ export default function Header({ transparent = false }: HeaderProps) {
                             className="p-2 hover:text-primary transition-colors hover:scale-110 duration-300"
                             aria-label="Ouvrir la recherche"
                         >
-                            <Search size={20} />
+                            <Search size={18} />
                         </button>
 
 
@@ -271,6 +282,23 @@ export default function Header({ transparent = false }: HeaderProps) {
                                 );
                             })}
                         </nav>
+
+                        <div className="flex gap-4 mt-8">
+                            <Link 
+                                href="/admin/login" 
+                                className="flex-1 bg-white text-stone-900 py-4 text-center text-xs uppercase tracking-widest font-black rounded-sm"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Se Connecter
+                            </Link>
+                            <Link 
+                                href="/cart" 
+                                className="flex-1 bg-primary text-white py-4 text-center text-xs uppercase tracking-widest font-black rounded-sm"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                Panier ({cartCount})
+                            </Link>
+                        </div>
                         
                         <div className="mt-auto pt-8 border-t border-stone-800">
                             <p className="text-stone-500 text-xs uppercase tracking-widest mb-4">Contactez-nous</p>

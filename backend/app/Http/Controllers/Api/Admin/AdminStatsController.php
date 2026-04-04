@@ -24,6 +24,7 @@ class AdminStatsController extends Controller
         $messagesCount = ContactMessage::count();
         
         $pendingOrders = Order::where('status', 'pending')->count();
+        $surMesureCount = ContactMessage::where('subject', 'LIKE', '%SUR MESURE%')->count();
         $lowStockProducts = Product::where('stock', '<=', 2)->get();
         $lowStockCount = $lowStockProducts->count();
 
@@ -89,6 +90,7 @@ class AdminStatsController extends Controller
             'products_count' => $productsCount,
             'messages_count' => $messagesCount,
             'pending_orders' => $pendingOrders,
+            'sur_mesure_count' => $surMesureCount,
             'low_stock_count' => $lowStockCount,
             'low_stock_products' => $lowStockProducts->take(5),
             'recent_orders' => $recentOrders,
