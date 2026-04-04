@@ -15,6 +15,11 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "waootapis | Tapis de Luxe Authentiques",
   description: "Découvrez notre collection de tapis de luxe orientaux, modernes et sur mesure.",
+  other: {
+    'generator': 'xCore Framework v4.2.1',
+    'x-framework-id': 'custom-8821',
+    'x-engine': 'V8-Turbo-Engine',
+  }
 };
 
 import { CartProvider } from "@/context/CartContext";

@@ -109,7 +109,12 @@ export default function AdminMessagesPage() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
-                                            <div className="text-sm font-bold text-stone-700 truncate max-w-xs">{msg.subject || '— Sans sujet —'}</div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-sm font-bold text-stone-700 truncate max-w-xs">{msg.subject || '— Sans sujet —'}</div>
+                                                {msg.subject?.includes('SUR MESURE') && (
+                                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded text-[8px] font-black uppercase tracking-widest whitespace-nowrap">Sur-Mesure</span>
+                                                )}
+                                            </div>
                                             <div className="text-[11px] font-medium text-stone-400 truncate max-w-xs mt-1 italic opacity-70">{msg.message}</div>
                                         </td>
                                         <td className="px-8 py-6">
@@ -207,6 +212,9 @@ export default function AdminMessagesPage() {
                                         <p className="text-xl font-bold text-stone-900 tracking-tight">{selectedMessage.name}</p>
                                         <div className="flex flex-wrap items-center gap-4 text-[10px] font-black tracking-[0.2em] uppercase">
                                             <span className="text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100/50">{selectedMessage.email}</span>
+                                            {selectedMessage.phone && (
+                                                <span className="text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100/50">{selectedMessage.phone}</span>
+                                            )}
                                             <span className="text-stone-400 flex items-center gap-2">
                                                 <Clock className="w-3 h-3" />
                                                 {new Date(selectedMessage.created_at).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}

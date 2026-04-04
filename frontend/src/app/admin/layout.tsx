@@ -30,6 +30,7 @@ export default function AdminLayout({
 
     const [lowStockCount, setLowStockCount] = useState(0);
     const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+    const [surMesureCount, setSurMesureCount] = useState(0);
 
     useEffect(() => {
         // Basic check for token
@@ -55,6 +56,9 @@ export default function AdminLayout({
                 const orderRes = await adminService.getOrders(1);
                 const pending = orderRes.data.data.filter((o: any) => o.status === 'pending');
                 setPendingOrdersCount(pending.length);
+                // Fetch stats for various counts
+                const statsRes = await adminService.getStats();
+                setSurMesureCount(statsRes.data.sur_mesure_count || 0);
             } catch (error) {
                 console.error('Failed to fetch counts:', error);
             }
@@ -97,6 +101,7 @@ export default function AdminLayout({
         { name: 'Stock', href: '/admin/inventory', icon: StockIcon, badge: lowStockCount > 0 ? lowStockCount : null },
         { name: 'Catégories', href: '/admin/categories', icon: Layers },
         { name: 'Commandes', href: '/admin/orders', icon: ShoppingCart, badge: pendingOrdersCount > 0 ? pendingOrdersCount : null },
+        { name: 'Sur Mesure', href: '/admin/sur-mesure', icon: Layers, badge: surMesureCount > 0 ? surMesureCount : null },
         { name: 'Messages', href: '/admin/messages', icon: MessageSquare },
     ];
 
