@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { adminService } from '@/services/admin';
 import { getImageUrl } from '@/services/api';
+import { orderStatusMap } from '@/utils/status';
 import { 
     TrendingUp, 
     Calendar, 
@@ -10,109 +11,218 @@ import {
     ShoppingBag, 
     ArrowUpRight,
     BarChart3,
-    History
+    History,
+    Download,
+    ChevronLeft,
+    ChevronRight,
+    FileText
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AnalyticsPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    
+    // Default to current month and year
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+    const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
+    const fetchStats = async () => {
+        setLoading(true);
+        try {
+            const response = await adminService.getStats(selectedMonth, selectedYear);
+            setStats(response.data);
+        } catch (error) {
+            console.error('Failed to fetch stats:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await adminService.getStats();
-                setStats(response.data);
-            } catch (error) {
-                console.error('Failed to fetch stats:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchStats();
-    }, []);
+    }, [selectedMonth, selectedYear]);
 
-    // Aggregate Legends (Top Products over 6 months)
+    // Top products for the SELECTED month only
     const legends = React.useMemo(() => {
-        if (!stats?.monthly_sales) return [];
-        const productMap = new Map();
-        
-        stats.monthly_sales.forEach((month: any) => {
-            month.top_products?.forEach((p: any) => {
-                const existing = productMap.get(p.product_id) || { ...p, sold: 0 };
-                productMap.set(p.product_id, {
-                    ...existing,
-                    sold: existing.sold + p.sold
-                });
-            });
-        });
-        
-        return Array.from(productMap.values())
-            .sort((a: any, b: any) => b.sold - a.sold)
-            .slice(0, 4);
+        if (!stats?.monthly_sales?.[0]?.top_products) return [];
+        return stats.monthly_sales[0].top_products.slice(0, 4);
     }, [stats]);
+
+    const handlePrevMonth = () => {
+        if (selectedMonth === 1) {
+            setSelectedMonth(12);
+            setSelectedYear(prev => prev - 1);
+        } else {
+            setSelectedMonth(prev => prev - 1);
+        }
+    };
+
+    const handleNextMonth = () => {
+        if (selectedMonth === 12) {
+            setSelectedMonth(1);
+            setSelectedYear(prev => prev + 1);
+        } else {
+            setSelectedMonth(prev => prev + 1);
+        }
+    };
+
+    const handleDownloadPDF = () => {
+        window.print();
+    };
+
+    const monthNames = [
+        "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+        "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+    ];
+
+    const years = Array.from({length: 5}, (_, i) => now.getFullYear() - 2 + i);
 
     if (loading) {
         return (
-            <div className="space-y-8 animate-pulse">
-                <div className="h-20 bg-white rounded-3xl border border-stone-100"></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
-                        <div key={i} className="h-96 bg-white rounded-[2.5rem] border border-stone-100"></div>
+            <div className="space-y-12 animate-pulse pb-24">
+                <div className="h-40 bg-white rounded-[3rem] border border-stone-100"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="h-40 bg-white rounded-[2rem] border border-stone-100"></div>
                     ))}
                 </div>
+                <div className="h-[600px] bg-white rounded-[4rem] border border-stone-100"></div>
             </div>
         );
     }
 
+    const currentMonthData = stats?.monthly_sales?.[0];
+
     return (
-        <div className="space-y-12 pb-24 mx-auto">
-            {/* Header with Glassmorphism Effect */}
-            <div className="relative p-10 bg-white rounded-[3rem] border border-stone-100 shadow-xl overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-1000" />
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div className="space-y-3">
-                        <Link href="/admin" className="inline-flex items-center gap-2 text-stone-400 hover:text-stone-900 transition-colors text-[10px] font-black uppercase tracking-widest px-4 py-2 bg-stone-50 rounded-full">
+        <div className="space-y-12 pb-24 mx-auto print:space-y-6 print:pb-0">
+            {/* Global Print Styles */}
+            <style jsx global>{`
+                @media print {
+                    aside, header, nav, footer, .no-print, button, select, .cursor-pointer {
+                        display: none !important;
+                    }
+                    body, html {
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: white !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    main {
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                    }
+                    .print-header {
+                        display: block !important;
+                    }
+                    .mx-auto {
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                    }
+                    .shadow-2xl, .shadow-xl, .shadow-sm {
+                        shadow: none !important;
+                        box-shadow: none !important;
+                        border: 1px solid #e5e7eb !important;
+                    }
+                    /* Ensure images load */
+                    img {
+                        max-width: 100% !important;
+                    }
+                }
+            `}</style>
+            {/* Header with Glassmorphism Effect & Filters */}
+            <div className="relative p-12 bg-white rounded-[3.5rem] border border-stone-100 shadow-2xl overflow-hidden group">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 group-hover:scale-125 transition-transform duration-1000" />
+                <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-10">
+                    <div className="space-y-4">
+                        <Link href="/admin" className="inline-flex items-center gap-2 text-stone-400 hover:text-stone-900 transition-colors text-[10px] font-black uppercase tracking-[0.3em] px-5 py-2.5 bg-stone-50 rounded-full no-print">
                             <ArrowLeft size={12} /> Dashboard
                         </Link>
-                        <div className="flex items-center gap-5">
-                            <div className="w-16 h-16 bg-stone-900 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl">
-                                <History size={32} />
+                        <div className="flex items-center gap-6">
+                            <div className="w-20 h-20 bg-stone-900 rounded-[1.75rem] flex items-center justify-center text-white shadow-2xl">
+                                <History size={36} />
                             </div>
                             <div>
-                                <h1 className="text-4xl font-playfair font-bold text-stone-900 tracking-tight leading-tight">Odyssée Analytique</h1>
-                                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-400 mt-1 italic">Secrets de performance • Période de 6 mois</p>
+                                <h1 className="text-5xl font-playfair font-bold text-stone-900 tracking-tight leading-tight italic">Rapport Mensuel</h1>
+                                <p className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-400 mt-2 italic flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    Analyse {monthNames[selectedMonth - 1]} {selectedYear}
+                                </p>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-3">
-                        <div className="hidden sm:flex px-5 py-3 bg-white border border-stone-100 text-stone-900 rounded-2xl items-center gap-3 shadow-sm">
-                            <div className="text-right">
-                                <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest leading-none">Total Semestre</p>
-                                <p className="text-lg font-bold">
-                                    {stats?.monthly_sales?.reduce((acc: number, m: any) => acc + (m.total || 0), 0).toLocaleString()} MAD
-                                </p>
-                            </div>
+                    <div className="flex flex-wrap items-center gap-4">
+                        {/* Month/Year Selection Calendar UI */}
+                        <div className="flex items-center gap-2 bg-stone-50 p-2 rounded-[1.75rem] border border-stone-100">
+                            <button onClick={handlePrevMonth} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-stone-900 hover:text-white transition-all text-stone-600">
+                                <ChevronLeft size={18} />
+                            </button>
+                            
+                            <select 
+                                value={selectedMonth}
+                                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                                className="bg-transparent text-sm font-black uppercase tracking-widest px-4 outline-none border-none cursor-pointer text-stone-900 appearance-none text-center"
+                            >
+                                {monthNames.map((name, i) => (
+                                    <option key={i} value={i + 1}>{name}</option>
+                                ))}
+                            </select>
+
+                            <select 
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                className="bg-transparent text-sm font-black uppercase tracking-widest px-4 outline-none border-none cursor-pointer text-stone-900 appearance-none text-center border-l border-stone-200"
+                            >
+                                {years.map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                            
+                            <button onClick={handleNextMonth} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-stone-900 hover:text-white transition-all text-stone-600">
+                                <ChevronRight size={18} />
+                            </button>
                         </div>
-                        <button className="p-4 bg-stone-900 text-white rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">
-                            <BarChart3 size={20} />
+
+                        <button 
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100 hover:bg-emerald-700 hover:scale-[1.03] active:scale-95 transition-all group lg:no-print"
+                        >
+                            <Download size={18} className="group-hover:translate-y-0.5 transition-transform" /> 
+                            Télécharger PDF
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Legends Section - Aggregated Top products */}
+            {/* Best Sellers of the MONTH */}
             <div className="space-y-8">
-                <div className="flex items-center gap-4 px-4">
-                    <TrendingUp className="text-primary" size={24} />
-                    <h2 className="text-2xl font-playfair font-bold text-stone-900 italic">Légendes de la Période</h2>
+                <div className="flex items-center justify-between px-4">
+                    <div className="flex items-center gap-4">
+                        <TrendingUp className="text-primary" size={24} />
+                        <h2 className="text-2xl font-playfair font-bold text-stone-900 italic">Best-Sellers de {monthNames[selectedMonth - 1]}</h2>
+                    </div>
+                    {currentMonthData && (
+                        <div className="hidden sm:flex px-6 py-3 bg-stone-50 border border-stone-100 rounded-2xl items-center gap-3">
+                            <div className="text-right">
+                                <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest leading-none">Chiffre d'Affaire Mensuel</p>
+                                <p className="text-lg font-bold text-stone-900">{currentMonthData.total?.toLocaleString()} MAD</p>
+                            </div>
+                        </div>
+                    )}
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {legends.map((p: any, i: number) => (
-                        <div key={i} className="bg-white p-6 rounded-[2.5rem] border border-stone-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group cursor-pointer relative overflow-hidden">
+                    {legends.length > 0 ? legends.map((p: any, i: number) => (
+                        <div key={p.product_id} className="bg-white p-6 rounded-[2.5rem] border border-stone-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group cursor-pointer relative overflow-hidden">
                             <div className="flex items-center gap-5 relative z-10">
-                                <div className="w-20 h-28 rounded-2xl bg-stone-50 overflow-hidden shadow-inner border border-stone-100 flex-shrink-0">
+                                <div className="w-20 h-24 rounded-2xl bg-stone-50 overflow-hidden shadow-inner border border-stone-100 flex-shrink-0">
                                     {p.image ? (
                                         <img src={getImageUrl(p.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
                                     ) : (
@@ -120,62 +230,62 @@ export default function AnalyticsPage() {
                                     )}
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[9px] font-black text-primary uppercase tracking-widest leading-none italic">#0{i+1} Best-Seller</span>
+                                    <span className="text-[9px] font-black text-primary uppercase tracking-widest leading-none italic">#0{i+1} au Top</span>
                                     <h4 className="text-sm font-bold text-stone-900 line-clamp-2 leading-tight">{p.name}</h4>
                                     <div className="flex items-center gap-2 mt-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                        <p className="text-[10px] font-black text-stone-900">{p.sold} <span className="text-stone-400 font-bold uppercase">Unités</span></p>
+                                        <p className="text-[10px] font-black text-stone-900">{p.sold} <span className="text-stone-400 font-bold uppercase">Ventes</span></p>
                                     </div>
                                 </div>
                             </div>
                             <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover:opacity-10 transition-opacity">
-                                <TrendingUp size={48} />
+                                <FileText size={48} />
                             </div>
                         </div>
-                    ))}
+                    )) : (
+                         <div className="col-span-full py-12 px-6 border-2 border-dashed border-stone-100 rounded-[2.5rem] flex flex-col items-center justify-center text-stone-300">
+                            <History size={40} className="mb-4 opacity-50" />
+                            <p className="text-xs font-black uppercase tracking-[0.3em]">Aucune donnée sur les ventes</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Monthly Reports Detailed Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 pt-8">
-                {stats?.monthly_sales?.map((monthData: any, idx: number) => (
-                    <div 
-                        key={idx} 
-                        className="bg-white rounded-[4rem] border border-stone-100 shadow-2xl overflow-hidden group hover:border-primary/20 transition-all duration-700 flex flex-col"
-                    >
-                        {/* Monthly Summary Header */}
+            {/* Main Monthly Report Card (Showing only the selected one) */}
+            <div className="pt-8">
+                {currentMonthData ? (
+                    <div className="bg-white rounded-[4rem] border border-stone-100 shadow-2xl overflow-hidden group hover:border-primary/20 transition-all duration-700 flex flex-col">
                         <div className="p-12 space-y-10 flex-grow">
                             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-stone-50 pb-10 relative">
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
                                         <div className="px-4 py-1.5 bg-stone-900 rounded-full text-white text-[10px] font-black uppercase tracking-[0.2em] italic">
-                                            Archive {new Date().getFullYear()}
+                                            Rapport détaillé • {selectedYear}
                                         </div>
                                     </div>
-                                    <h3 className="text-5xl font-playfair font-bold text-stone-900 capitalize italic tracking-tight">{monthData.name}</h3>
+                                    <h3 className="text-6xl font-playfair font-bold text-stone-900 capitalize italic tracking-tight">{currentMonthData.name}</h3>
                                     <p className="text-[11px] font-black text-stone-400 uppercase tracking-[0.3em]">Performance du catalogue d'exception</p>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-xs font-black text-stone-300 uppercase tracking-widest mb-2">Chiffre d'Affaire</div>
-                                    <div className="text-4xl font-bold text-stone-900 tracking-tighter">
-                                        {monthData.total?.toLocaleString()}
+                                    <div className="text-xs font-black text-stone-300 uppercase tracking-widest mb-2 text-right">Volume Transactionnel</div>
+                                    <div className="text-5xl font-bold text-stone-900 tracking-tighter">
+                                        {currentMonthData.total?.toLocaleString()}
                                         <span className="text-sm text-stone-400 ml-2 font-bold uppercase tracking-widest italic">MAD</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Detailed Product List */}
                             <div className="space-y-12">
-                                {monthData.top_products && monthData.top_products.length > 0 ? (
-                                    monthData.top_products.map((product: any, pIdx: number) => {
-                                        const maxInMonth = Math.max(...monthData.top_products.map((p: any) => p.sold)) || 1;
+                                {currentMonthData.top_products && currentMonthData.top_products.length > 0 ? (
+                                    currentMonthData.top_products.map((product: any, pIdx: number) => {
+                                        const maxInMonth = Math.max(...currentMonthData.top_products.map((p: any) => p.sold)) || 1;
                                         const width = (product.sold / maxInMonth) * 100;
                                         
                                         return (
-                                            <div key={pIdx} className="group/item flex flex-col sm:flex-row items-center gap-8 p-6 rounded-[2.5rem] hover:bg-stone-50/80 transition-all border border-transparent hover:border-stone-100 relative">
-                                                <div className="relative w-32 h-44 flex-shrink-0 group-hover/item:scale-105 transition-transform duration-500">
-                                                    <div className="absolute inset-0 bg-stone-100 rounded-3xl shadow-inner group-hover/item:rotate-12 transition-transform duration-700" />
-                                                    <div className="absolute inset-0 rounded-3xl overflow-hidden border-4 border-white shadow-2xl group-hover/item:-rotate-3 transition-transform duration-500">
+                                            <div key={pIdx} className="group/item flex flex-col sm:flex-row items-center gap-10 p-8 rounded-[3.5rem] hover:bg-stone-50/80 transition-all border border-transparent hover:border-stone-100 relative">
+                                                <div className="relative w-36 h-48 flex-shrink-0 group-hover/item:scale-105 transition-transform duration-500">
+                                                    <div className="absolute inset-0 bg-stone-100 rounded-[2.5rem] shadow-inner group-hover/item:rotate-12 transition-transform duration-700" />
+                                                    <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl group-hover/item:-rotate-3 transition-transform duration-500">
                                                         {product.image ? (
                                                             <img src={getImageUrl(product.image)} className="w-full h-full object-cover" alt="" />
                                                         ) : (
@@ -184,26 +294,26 @@ export default function AnalyticsPage() {
                                                     </div>
                                                 </div>
 
-                                                <div className="flex-grow space-y-6 w-full">
+                                                <div className="flex-grow space-y-7 w-full">
                                                     <div className="flex items-start justify-between gap-4">
                                                         <div className="space-y-1">
-                                                            <h4 className="text-xl font-bold text-stone-900 group-hover/item:text-primary transition-colors line-clamp-1">{product.name}</h4>
+                                                            <h4 className="text-2xl font-bold text-stone-900 group-hover/item:text-primary transition-colors line-clamp-1">{product.name}</h4>
                                                             <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest italic">Identifiant Produit #{product.product_id}</p>
                                                         </div>
-                                                        <div className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center text-stone-900 shadow-sm">
-                                                            <ArrowUpRight size={20} />
+                                                        <div className="w-14 h-14 rounded-2xl bg-white border border-stone-100 flex items-center justify-center text-stone-900 shadow-sm opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                                            <ArrowUpRight size={24} />
                                                         </div>
                                                     </div>
 
-                                                    <div className="space-y-3">
+                                                    <div className="space-y-4">
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                                                <span className="text-xs font-black text-stone-900 uppercase tracking-tighter">{product.sold} Ventes Validées</span>
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                                <span className="text-xs font-black text-stone-900 uppercase tracking-tighter">{product.sold} Ventes Directes</span>
                                                             </div>
-                                                            <span className="text-[10px] font-bold text-stone-300 italic opacity-0 group-hover/item:opacity-100 transition-opacity">Progression {Math.round(width)}%</span>
+                                                            <span className="text-[10px] font-bold text-stone-400 italic">Score Performance: {Math.round(width)}%</span>
                                                         </div>
-                                                        <div className="h-2.5 w-full bg-white rounded-full overflow-hidden p-0.5 border border-stone-100">
+                                                        <div className="h-4 w-full bg-stone-50 rounded-full overflow-hidden p-1 border border-stone-100/50">
                                                             <div 
                                                                 className="h-full bg-stone-900 rounded-full transition-all duration-1000 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover/item:bg-primary shadow-[0_0_15px_rgba(0,0,0,0.1)]" 
                                                                 style={{ width: `${Math.max(width, 4)}%` }}
@@ -219,26 +329,98 @@ export default function AnalyticsPage() {
                                         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sm mb-6 border border-stone-100">
                                             <TrendingUp className="text-stone-200" size={32} />
                                         </div>
-                                        <h5 className="text-xl font-playfair font-bold text-stone-900 mb-2 italic">Silence Radio</h5>
-                                        <p className="text-xs font-bold text-stone-300 uppercase tracking-[0.3em] font-mono">Aucun mouvement transactionnel</p>
+                                        <h5 className="text-xl font-playfair font-bold text-stone-900 mb-2 italic">Aucune transaction ce mois-ci</h5>
+                                        <p className="text-xs font-bold text-stone-300 uppercase tracking-[0.3em] font-mono">En attente de données...</p>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* Premium Card Footer */}
-                        <div className="px-12 py-8 bg-stone-900 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest italic underline decoration-stone-700 underline-offset-4">Rapport Mensuel</span>
-                                <div className="w-1 h-1 bg-primary rounded-full" />
-                                <span className="text-[10px] font-black text-white uppercase tracking-widest">{monthData.name} {new Date().getFullYear()}</span>
+                        {/* Premium Card Footer with Download */}
+                        <div className="px-12 py-10 bg-stone-900 flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white">
+                                    <Calendar size={24} />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-white uppercase tracking-widest">{monthNames[selectedMonth - 1]} {selectedYear}</p>
+                                    <p className="text-[9px] font-medium text-stone-500 uppercase tracking-[0.2em] mt-0.5">Données Finalisées</p>
+                                </div>
                             </div>
-                            <button className="text-[10px] font-black text-stone-400 hover:text-white transition-colors uppercase tracking-[0.2em] flex items-center gap-2 group/btn">
-                                Exporter PDF <ArrowLeft size={10} className="rotate-180 group-hover/btn:translate-x-1 transition-transform" />
+                            <button 
+                                onClick={handleDownloadPDF}
+                                className="flex items-center gap-3 px-8 py-4 bg-white text-stone-900 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-stone-100 transition-all shadow-2xl relative overflow-hidden group/export no-print"
+                            >
+                                <div className="absolute inset-x-0 bottom-0 h-1 bg-emerald-500 translate-y-full group-hover/export:translate-y-0 transition-transform" />
+                                <Download size={14} className="group-hover/export:translate-y-0.5 transition-transform" /> 
+                                Exporter en PDF
                             </button>
                         </div>
                     </div>
-                ))}
+                ) : (
+                    <div className="bg-white p-24 rounded-[4rem] border-2 border-dashed border-stone-100 text-center">
+                        <History size={60} className="mx-auto text-stone-100 mb-8" />
+                        <h3 className="text-2xl font-playfair font-bold text-stone-900 italic mb-2">Pas encore de données</h3>
+                        <p className="text-xs font-black text-stone-400 uppercase tracking-[0.3em]">Veuillez sélectionner une autre période</p>
+                    </div>
+                )}
+            </div>
+
+            {/* Recent Orders Table Section */}
+            <div className="pt-12 space-y-8">
+                <div className="flex items-center justify-between px-4">
+                    <div className="flex items-center gap-4">
+                        <ShoppingBag className="w-7 h-7 text-stone-900" />
+                        <h2 className="text-3xl font-playfair font-bold text-stone-900 tracking-tight leading-none italic">Dernières Transactions</h2>
+                    </div>
+                    <div className="hidden lg:flex items-center gap-4">
+                        <div className="px-4 py-2 bg-stone-50 rounded-xl text-[10px] font-bold text-stone-400 uppercase tracking-widest">Temps Réel</div>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-[3.5rem] border border-stone-200 shadow-2xl overflow-hidden ring-1 ring-black/5">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="bg-stone-900 text-stone-400 text-[10px] font-black uppercase tracking-[0.25em]">
+                                    <th className="px-10 py-7">Réf.</th>
+                                    <th className="px-10 py-7">Client / Destination</th>
+                                    <th className="px-10 py-7">Date</th>
+                                    <th className="px-10 py-7">Montant</th>
+                                    <th className="px-10 py-7">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-stone-100">
+                                {stats?.recent_orders?.map((order: any) => {
+                                    const status = orderStatusMap[order.status as keyof typeof orderStatusMap] || { label: order.status, color: 'text-stone-400 bg-stone-50 border-stone-100' };
+                                    return (
+                                        <tr key={order.id} className="hover:bg-stone-50/50 transition-colors group cursor-pointer">
+                                            <td className="px-10 py-8">
+                                                <div className="font-playfair font-bold text-stone-900 text-xl tracking-tight">#{order.order_number}</div>
+                                            </td>
+                                            <td className="px-10 py-8">
+                                                <div className="text-base font-bold text-stone-900">{order.customer_name}</div>
+                                                <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest mt-1 italic">{order.customer_city}, Mar</div>
+                                            </td>
+                                            <td className="px-10 py-8 text-stone-400 font-bold text-sm">
+                                                {new Date(order.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                                            </td>
+                                            <td className="px-10 py-8">
+                                                <div className="font-bold text-stone-900 text-lg">{order.total_amount?.toLocaleString()} <span className="text-[10px] font-black text-stone-400">MAD</span></div>
+                                            </td>
+                                            <td className="px-10 py-8">
+                                                <span className={`px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 inline-flex items-center gap-2 ${status.color}`}>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-current" />
+                                                    {status.label}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     );

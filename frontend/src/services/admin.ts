@@ -23,7 +23,13 @@ export const adminService = {
     getMe: () => adminApi.get('/me'),
 
     // Stats
-    getStats: () => adminApi.get('/stats'),
+    getStats: (month?: number, year?: number) => {
+        let url = '/stats';
+        if (month && year) {
+            url += `?month=${month}&year=${year}`;
+        }
+        return adminApi.get(url);
+    },
 
     // Products
     getProducts: (page = 1, search = '', categoryId = '') => {

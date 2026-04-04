@@ -71,6 +71,12 @@ class OrderController extends Controller
                 }
 
                 OrderItem::create($orderItemData);
+                
+                // Decrement stock if product tracks inventory
+                if ($product->stock !== null) {
+                    $product->decrement('stock', $itemData['quantity']);
+                }
+                
                 $total += $subtotal;
             }
 

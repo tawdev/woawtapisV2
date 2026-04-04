@@ -227,7 +227,7 @@ export default function AdminDashboard() {
                             )}
                         </div>
 
-                        <Link href="/admin/products" className="mt-8 flex items-center justify-center py-4 bg-stone-50 hover:bg-stone-100 rounded-2xl text-xs font-black uppercase tracking-widest text-stone-600 transition-all">
+                        <Link href="/admin/inventory" className="mt-8 flex items-center justify-center py-4 bg-stone-50 hover:bg-stone-100 rounded-2xl text-xs font-black uppercase tracking-widest text-stone-600 transition-all">
                             Gérer l'inventaire
                         </Link>
                     </div>

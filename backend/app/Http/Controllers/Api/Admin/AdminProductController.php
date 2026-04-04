@@ -15,7 +15,7 @@ class AdminProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'type', 'images']);
+        $query = Product::with(['category', 'type', 'images', 'primaryImage']);
         
         if ($request->has('search') && !empty($request->search)) {
             $query->where('name', 'like', '%' . $request->search . '%');

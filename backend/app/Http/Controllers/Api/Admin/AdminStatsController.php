@@ -13,8 +13,11 @@ class AdminStatsController extends Controller
     /**
      * Get dashboard statistics.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $selectedMonth = $request->input('month');
+        $selectedYear = $request->input('year');
+
         $totalSales = Order::where('status', 'delivered')->sum('total_amount');
         $ordersCount = Order::count();
         $productsCount = Product::count();
@@ -26,10 +29,21 @@ class AdminStatsController extends Controller
 
         $recentOrders = Order::latest()->take(6)->get();
 
-        // Monthly trends (last 6 months)
+        // Monthly trends
         $monthlySales = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
+        
+        if ($selectedMonth && $selectedYear) {
+            $iterations = 1;
+        } else {
+            $iterations = 6;
+        }
+
+        for ($i = $iterations - 1; $i >= 0; $i--) {
+            if ($selectedMonth && $selectedYear) {
+                $date = \Carbon\Carbon::createFromDate($selectedYear, $selectedMonth, 1);
+            } else {
+                $date = now()->subMonths($i);
+            }
             
             // Sales
             $sales = Order::whereMonth('created_at', $date->month)
@@ -37,7 +51,7 @@ class AdminStatsController extends Controller
                 ->where('status', 'delivered')
                 ->sum('total_amount');
 
-            // Top 5 sellers of that month (using the Parent Order's date and status)
+            // Top 10 sellers of that month
             $topProducts = \App\Models\OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
                 ->whereMonth('orders.created_at', $date->month)
                 ->whereYear('orders.created_at', $date->year)
@@ -50,18 +64,20 @@ class AdminStatsController extends Controller
                 ->groupBy('order_items.product_id', 'order_items.product_name')
                 ->orderByDesc('total_sold')
                 ->with(['product.primaryImage'])
-                ->take(5)
+                ->take(10) // Increase to 10 for detailed view
                 ->get();
 
             $monthlySales[] = [
-                'name' => $date->translatedFormat('F'), // Full month name
+                'name' => $date->translatedFormat('F'),
+                'month' => $date->month,
+                'year' => $date->year,
                 'total' => (float)$sales,
                 'top_products' => $topProducts->map(function($item) {
                     return [
                         'name' => $item->product_name,
                         'sold' => (int)$item->total_sold,
                         'image' => $item->product?->primaryImage?->image_path,
-                        'id' => $item->product_id
+                        'product_id' => $item->product_id
                     ];
                 })
             ];
@@ -76,7 +92,11 @@ class AdminStatsController extends Controller
             'low_stock_count' => $lowStockCount,
             'low_stock_products' => $lowStockProducts->take(5),
             'recent_orders' => $recentOrders,
-            'monthly_sales' => $monthlySales
+            'monthly_sales' => $monthlySales,
+            'selected_filter' => [
+                'month' => $selectedMonth,
+                'year' => $selectedYear
+            ]
         ]);
     }
 }
