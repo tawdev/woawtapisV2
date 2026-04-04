@@ -50,8 +50,8 @@ export default function Footer() {
                     <div>
                         <h4 className="text-xs uppercase tracking-[0.3em] font-black text-primary mb-8">Aide</h4>
                         <ul className="space-y-4 text-stone-300 text-sm">
-                            {['Livraison', 'Retours', 'Guide des tailles', 'Contact'].map(link => (
-                                <li key={link}><a href="#" className="hover:text-white transition-colors py-2 block">{link}</a></li>
+                            {['Suivi de Commande', 'Livraison', 'Retours', 'Contact'].map(link => (
+                                <li key={link}><a href={link === 'Suivi de Commande' ? '/track-order' : link === 'Contact' ? '/contact' : '#'} className="hover:text-white transition-colors py-2 block">{link}</a></li>
                             ))}
                         </ul>
                     </div>

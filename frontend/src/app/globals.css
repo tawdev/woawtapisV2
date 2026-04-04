@@ -96,3 +96,17 @@
     scrollbar-width: none;
   }
 }
+
+@media print {
+  .no-print, header, footer, nav, button, .whatsapp-btn, #tidio-chat {
+    display: none !important;
+  }
+  .print-only, .print-block {
+    display: block !important;
+  }
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

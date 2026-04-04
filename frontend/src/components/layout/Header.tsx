@@ -89,13 +89,11 @@ export default function Header({ transparent = false }: HeaderProps) {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-12">
-                        {['Accueil', 'À Propos', 'Nos Tapis', 'Collections', 'Sur Mesure', 'Journal', 'Contact'].map((item: string) => {
+                        {['Accueil', 'Nos Tapis', 'Sur Mesure', 'Suivi Commande', 'Contact'].map((item: string) => {
                             const href = item === 'Accueil' ? '/' :
                                 item === 'Nos Tapis' ? '/products' :
-                                    item === 'Collections' ? '/collections' :
-                                        item === 'Sur Mesure' ? '/products?type=sur_mesure' :
-                                            item === 'À Propos' ? '/a-propos' :
-                                                item === 'Journal' ? '/blog' : '/contact';
+                                    item === 'Sur Mesure' ? '/products?type=sur_mesure' :
+                                        item === 'Suivi Commande' ? '/track-order' : '/contact';
                             return (
                                 <Link
                                     key={item}
@@ -256,13 +254,11 @@ export default function Header({ transparent = false }: HeaderProps) {
                         </div>
 
                         <nav className="flex flex-col gap-8 flex-1 overflow-y-auto mt-8">
-                            {['Accueil', 'À Propos', 'Nos Tapis', 'Collections', 'Sur Mesure', 'Journal', 'Contact'].map((item: string) => {
+                            {['Accueil', 'Nos Tapis', 'Sur Mesure', 'Suivi Commande', 'Contact'].map((item: string) => {
                                 const href = item === 'Accueil' ? '/' :
                                     item === 'Nos Tapis' ? '/products' :
-                                        item === 'Collections' ? '/collections' :
-                                            item === 'Sur Mesure' ? '/products?type=sur_mesure' :
-                                                item === 'À Propos' ? '/a-propos' :
-                                                    item === 'Journal' ? '/blog' : '/contact';
+                                        item === 'Sur Mesure' ? '/products?type=sur_mesure' :
+                                            item === 'Suivi Commande' ? '/track-order' : '/contact';
                                 return (
                                     <Link
                                         key={item}

@@ -76,13 +76,13 @@ class OrderController extends Controller
 
             $order->update(['total_amount' => $total]);
 
-            return $order->load('items');
+            return $order->load('items.product.images', 'items.product.primaryImage');
         });
     }
 
     public function track($order_number)
     {
         $order = Order::where('order_number', $order_number)->firstOrFail();
-        return $order->load('items.product');
+        return $order->load('items.product.images', 'items.product.primaryImage');
     }
 }
