@@ -229,81 +229,86 @@ export default function EditProductPage() {
 
     if (fetching) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[400px]">
-                <Loader2 className="w-12 h-12 animate-spin text-stone-400" />
-                <p className="mt-4 text-stone-500 font-medium">Chargement du produit...</p>
+            <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
+                <div className="w-20 h-20 rounded-[2rem] bg-stone-50 border border-stone-100 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-stone-400" />
+                </div>
+                <p className="text-[10px] text-stone-400 font-black uppercase tracking-[0.2em]">Chargement de la pièce...</p>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/admin/products" className="p-2 rounded-lg hover:bg-stone-100 text-stone-500">
-                        <ArrowLeft className="w-6 h-6" />
-                    </Link>
-                    <h1 className="text-2xl font-bold text-stone-900 tracking-tight">Modifier le Produit</h1>
+        <div className="max-w-6xl mx-auto space-y-8 pb-12 animate-in fade-in duration-700">
+            <div className="flex items-center gap-6">
+                <Link href="/admin/products" className="w-12 h-12 rounded-2xl bg-white border border-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-900 hover:shadow-lg transition-all">
+                    <ArrowLeft className="w-5 h-5" />
+                </Link>
+                <div>
+                    <h1 className="text-3xl font-playfair font-bold text-stone-900 italic tracking-tight">Modifier la Pièce</h1>
+                    <p className="text-[10px] text-stone-400 font-black uppercase tracking-[0.2em] mt-1">Mise à jour des informations du tapis</p>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Info */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white p-8 rounded-2xl border border-stone-200 space-y-6">
-                        <h2 className="text-lg font-bold text-stone-900 border-b border-stone-100 pb-4">Informations Générales</h2>
+                <div className="lg:col-span-2 space-y-8">
+                    <div className="bg-white p-10 rounded-[2.5rem] border border-stone-100/60 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] space-y-8 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+                        <h2 className="text-2xl font-playfair font-bold text-stone-900 italic relative z-10 border-b border-stone-50 pb-6">Histoire & Descriptif</h2>
 
-                        <div className="space-y-4">
+                        <div className="space-y-6 relative z-10">
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Nom du produit *</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Nom de la pièce *</label>
                                 <input
                                     type="text"
                                     required
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all font-medium"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 transition-all font-bold text-stone-900"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Description courte</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Aperçu Rapide</label>
                                 <textarea
                                     value={formData.short_description}
                                     onChange={e => setFormData({ ...formData, short_description: e.target.value })}
                                     rows={2}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-stone-50 focus:border-stone-200 transition-all font-medium text-stone-700 resize-none"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Description complète</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Récit Complet</label>
                                 <textarea
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                     rows={4}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-stone-50 focus:border-stone-200 transition-all font-medium text-stone-700 resize-none"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-8 rounded-2xl border border-stone-200 space-y-6">
-                        <h2 className="text-lg font-bold text-stone-900 border-b border-stone-100 pb-4">Caractéristiques</h2>
+                    <div className="bg-white p-10 rounded-[2.5rem] border border-stone-100/60 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] space-y-8 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+                        <h2 className="text-2xl font-playfair font-bold text-stone-900 italic relative z-10 border-b border-stone-50 pb-6">Spécifications Techniques</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Matière</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Matière</label>
                                 <input
                                     type="text"
                                     value={formData.material}
                                     onChange={e => setFormData({ ...formData, material: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-amber-50 focus:border-amber-200 transition-all font-medium text-stone-900"
                                 />
                             </div>
                             {isSurMesure ? (
                                 <>
                                     <div>
-                                        <label className="block text-sm font-medium text-stone-700 mb-1">Max Longueur (cm)</label>
+                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Max Longueur (cm)</label>
                                         <input
                                             type="number"
                                             value={formData.max_longueur}
@@ -311,12 +316,12 @@ export default function EditProductPage() {
                                                 const val = e.target.value;
                                                 setFormData(prev => ({ ...prev, max_longueur: val, size: `${val}x${prev.max_largeur}` }));
                                             }}
-                                            className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm"
+                                            className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-stone-50 focus:border-stone-200 transition-all font-bold text-stone-900"
                                             placeholder="ex: 300"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-stone-700 mb-1">Max Largeur (cm)</label>
+                                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Max Largeur (cm)</label>
                                         <input
                                             type="number"
                                             value={formData.max_largeur}
@@ -324,40 +329,40 @@ export default function EditProductPage() {
                                                 const val = e.target.value;
                                                 setFormData(prev => ({ ...prev, max_largeur: val, size: `${prev.max_longueur}x${val}` }));
                                             }}
-                                            className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm"
+                                            className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-stone-50 focus:border-stone-200 transition-all font-bold text-stone-900"
                                             placeholder="ex: 200"
                                         />
                                     </div>
                                 </>
                             ) : (
                                 <div>
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">Dimensions</label>
+                                    <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Dimensions</label>
                                     <input
                                         type="text"
                                         value={formData.size}
                                         onChange={e => setFormData({ ...formData, size: e.target.value })}
-                                        className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm"
+                                        className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-stone-50 focus:border-stone-200 transition-all font-bold text-stone-900"
                                         placeholder="ex: 200 x 300 cm"
                                     />
                                 </div>
                             )}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-stone-700 mb-3">Couleurs</label>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="relative z-10">
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-4">Palette de Couleurs</label>
+                            <div className="flex flex-wrap gap-3">
                                 {COLORS.map(color => (
                                     <button
                                         key={color.name}
                                         type="button"
                                         onClick={() => handleColorToggle(color.name)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all text-xs font-bold ${formData.color.includes(color.name)
-                                            ? 'bg-stone-900 border-stone-900 text-white'
-                                            : 'bg-white border-stone-200 text-stone-600 hover:border-stone-400'
+                                        className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all text-xs font-black uppercase tracking-widest ${formData.color.includes(color.name)
+                                            ? 'bg-stone-900 border-stone-900 text-white shadow-lg'
+                                            : 'bg-white border-stone-200 text-stone-400 hover:border-stone-300 hover:text-stone-900'
                                             }`}
                                     >
                                         <span
-                                            className="w-3 h-3 rounded-full border border-black/10"
+                                            className="w-3.5 h-3.5 rounded-full border border-black/10 shadow-inner"
                                             style={{ backgroundColor: color.hex }}
                                         ></span>
                                         {color.name}
@@ -369,32 +374,32 @@ export default function EditProductPage() {
                 </div>
 
                 {/* Sidebar Info */}
-                <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl border border-stone-200 space-y-4">
-                        <div className="flex items-center justify-between border-b border-stone-100 pb-4">
-                            <h2 className="text-lg font-bold text-stone-900">Images</h2>
-                            <span className="bg-stone-100 text-stone-600 px-2 py-1 rounded-md text-xs font-bold">
-                                {productImages.length}
+                <div className="space-y-8">
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-stone-100/60 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] space-y-6 relative overflow-hidden">
+                        <div className="flex items-center justify-between border-b border-stone-50 pb-6">
+                            <h2 className="text-2xl font-playfair font-bold text-stone-900 italic">Galerie</h2>
+                            <span className="bg-stone-900 text-white px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                {productImages.length} photo{productImages.length > 1 ? 's' : ''}
                             </span>
                         </div>
 
                         {/* Add Image UI */}
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Ajouter via URL</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Ajouter via URL</label>
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
                                         placeholder="https://..."
                                         value={newImageUrl}
                                         onChange={e => setNewImageUrl(e.target.value)}
-                                        className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-stone-900"
+                                        className="flex-1 px-4 py-3 bg-stone-50/50 border border-stone-100 rounded-2xl text-xs outline-none focus:bg-white focus:ring-4 focus:ring-stone-50 focus:border-stone-200 transition-all"
                                     />
                                     <button
                                         type="button"
                                         onClick={handleUrlImageSubmit}
                                         disabled={uploadingImage || !newImageUrl}
-                                        className="p-2 bg-stone-900 text-white rounded-lg hover:bg-stone-800 disabled:opacity-50"
+                                        className="w-11 h-11 bg-stone-900 text-white rounded-2xl hover:bg-stone-800 disabled:opacity-40 flex items-center justify-center transition-all"
                                     >
                                         <Plus className="w-4 h-4" />
                                     </button>
@@ -402,7 +407,7 @@ export default function EditProductPage() {
                             </div>
 
                             <div className="relative">
-                                <label className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Ou Upload fichier</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Upload Fichier(s)</label>
                                 <input
                                     type="file"
                                     multiple
@@ -410,34 +415,34 @@ export default function EditProductPage() {
                                     onChange={handleFileUpload}
                                     disabled={uploadingImage}
                                     className="block w-full text-xs text-stone-500
-                                        file:mr-4 file:py-2 file:px-4
-                                        file:rounded-lg file:border-0
-                                        file:text-xs file:font-semibold
-                                        file:bg-stone-100 file:text-stone-700
+                                        file:mr-4 file:py-2.5 file:px-5
+                                        file:rounded-xl file:border-0
+                                        file:text-[10px] file:font-black file:uppercase file:tracking-widest
+                                        file:bg-stone-100 file:text-stone-600
                                         hover:file:bg-stone-200 cursor-pointer"
                                 />
                                 {uploadingImage && (
-                                    <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg">
-                                        <Loader2 className="w-4 h-4 animate-spin text-stone-900" />
+                                    <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-2xl backdrop-blur-sm">
+                                        <Loader2 className="w-5 h-5 animate-spin text-stone-900" />
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 mt-4">
+                        <div className="grid grid-cols-2 gap-3 mt-2">
                             {productImages.map((img, idx) => (
-                                <div key={img.id || idx} className="relative group aspect-square rounded-xl overflow-hidden border border-stone-100 bg-stone-50">
+                                <div key={img.id || idx} className="relative group aspect-square rounded-2xl overflow-hidden border border-stone-100 bg-stone-50 shadow-sm">
                                     <img
                                         src={getImageUrl(img.image_path)}
                                         alt={`Image ${idx + 1}`}
-                                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center gap-2 pb-3">
                                         {!img.is_primary && (
                                             <button
                                                 type="button"
                                                 onClick={() => handleSetPrimary(img.id)}
-                                                className="p-1.5 bg-white text-stone-900 rounded-lg hover:bg-stone-100"
+                                                className="p-2 bg-white/90 backdrop-blur-sm text-stone-900 rounded-xl hover:bg-white transition-all"
                                                 title="Définir comme principale"
                                             >
                                                 <Star className="w-3.5 h-3.5" />
@@ -446,15 +451,15 @@ export default function EditProductPage() {
                                         <button
                                             type="button"
                                             onClick={() => handleDeleteImage(img.id)}
-                                            className="p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                            className="p-2 bg-red-500/90 backdrop-blur-sm text-white rounded-xl hover:bg-red-600 transition-all"
                                             title="Supprimer"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
                                     {img.is_primary && (
-                                        <div className="absolute top-1 left-1 bg-stone-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                                            PRINCIPALE
+                                        <div className="absolute top-2 left-2 bg-stone-900 text-white text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest shadow">
+                                            ★ Principale
                                         </div>
                                     )}
                                 </div>
@@ -462,19 +467,19 @@ export default function EditProductPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-stone-200 space-y-4">
-                        <h2 className="text-lg font-bold text-stone-900 border-b border-stone-100 pb-4">Organisation</h2>
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-stone-100/60 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] space-y-6">
+                        <h2 className="text-2xl font-playfair font-bold text-stone-900 italic border-b border-stone-50 pb-6">Classification</h2>
 
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Type *</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Famille Racine *</label>
                                 <select
                                     required
                                     value={formData.type_id}
                                     onChange={e => setFormData({ ...formData, type_id: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm font-medium appearance-none"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 transition-all text-sm font-bold appearance-none cursor-pointer text-stone-900"
                                 >
-                                    <option value="">Sélectionnez un type</option>
+                                    <option value="">-- Collection --</option>
                                     {types.map(t => (
                                         <option key={t.id} value={t.id}>{t.name}</option>
                                     ))}
@@ -482,15 +487,15 @@ export default function EditProductPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Catégorie *</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Sous-Catégorie *</label>
                                 <select
                                     required
                                     disabled={!formData.type_id}
                                     value={formData.category_id}
                                     onChange={e => setFormData({ ...formData, category_id: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm font-medium appearance-none disabled:opacity-50"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 transition-all text-sm font-bold appearance-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-stone-900"
                                 >
-                                    <option value="">Sélectionnez une catégorie</option>
+                                    <option value="">-- Type --</option>
                                     {filteredCategories.map(c => (
                                         <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
@@ -498,14 +503,14 @@ export default function EditProductPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Statut</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Visibilité</label>
                                 <select
                                     value={formData.status}
                                     onChange={e => setFormData({ ...formData, status: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-sm font-semibold"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 transition-all text-[11px] font-black uppercase tracking-widest"
                                 >
-                                    <option value="active">Actif (Visible boutique)</option>
-                                    <option value="inactive">Inactif (Masqué)</option>
+                                    <option value="active">Publié — Visible boutique</option>
+                                    <option value="inactive">Masqué — Inactif</option>
                                 </select>
                             </div>
 
@@ -551,74 +556,72 @@ export default function EditProductPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-stone-200 space-y-6">
-                        <h2 className="text-lg font-bold text-stone-900 border-b border-stone-100 pb-4">Visibilité & Promotions</h2>
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-stone-100/60 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] space-y-6">
+                        <h2 className="text-2xl font-playfair font-bold text-stone-900 italic border-b border-stone-50 pb-6">Mise en Avant</h2>
                         <div className="space-y-4">
                             <button
                                 type="button"
                                 onClick={() => setFormData({ ...formData, is_featured: !formData.is_featured })}
-                                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${formData.is_featured ? 'bg-stone-900 border-stone-900 text-white' : 'bg-stone-50 border-stone-200 text-stone-600'
-                                    }`}
+                                className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${formData.is_featured ? 'bg-stone-900 border-stone-900 text-white' : 'bg-stone-50/50 border-stone-100 text-stone-500 hover:border-stone-200'}`}
                             >
                                 <div className="flex items-center gap-3">
                                     <Star className={`w-5 h-5 ${formData.is_featured ? 'fill-current' : ''}`} />
-                                    <span className="font-bold text-sm text-left">Produit à la une</span>
+                                    <span className="font-black text-[11px] uppercase tracking-widest text-left">À la une</span>
                                 </div>
-                                <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.is_featured ? 'bg-white/20' : 'bg-stone-200'}`}>
-                                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.is_featured ? 'right-1 bg-white' : 'left-1 bg-white shadow-sm'}`} />
+                                <div className={`w-11 h-6 rounded-full relative transition-colors ${formData.is_featured ? 'bg-white/20' : 'bg-stone-200'}`}>
+                                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.is_featured ? 'right-1 bg-white' : 'left-1 bg-stone-400/50'}`} />
                                 </div>
                             </button>
 
                             <button
                                 type="button"
                                 onClick={() => setFormData({ ...formData, is_best_seller: !formData.is_best_seller })}
-                                className={`w-full flex items-center justify-between p-4 rounded-xl border transition-all ${formData.is_best_seller ? 'bg-stone-900 border-stone-900 text-white' : 'bg-stone-50 border-stone-200 text-stone-600'
-                                    }`}
+                                className={`w-full flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${formData.is_best_seller ? 'bg-stone-900 border-stone-900 text-white' : 'bg-stone-50/50 border-stone-100 text-stone-500 hover:border-stone-200'}`}
                             >
                                 <div className="flex items-center gap-3">
                                     <Award className={`w-5 h-5 ${formData.is_best_seller ? 'fill-current' : ''}`} />
-                                    <span className="font-bold text-sm text-left">Meilleure vente</span>
+                                    <span className="font-black text-[11px] uppercase tracking-widest text-left">Best Seller</span>
                                 </div>
-                                <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.is_best_seller ? 'bg-white/20' : 'bg-stone-200'}`}>
-                                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.is_best_seller ? 'right-1 bg-white' : 'left-1 bg-white shadow-sm'}`} />
+                                <div className={`w-11 h-6 rounded-full relative transition-colors ${formData.is_best_seller ? 'bg-white/20' : 'bg-stone-200'}`}>
+                                    <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.is_best_seller ? 'right-1 bg-white' : 'left-1 bg-stone-400/50'}`} />
                                 </div>
                             </button>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-stone-200 space-y-6">
-                        <h2 className="text-lg font-bold text-stone-900 border-b border-stone-100 pb-4">Prix et Stock</h2>
+                    <div className="bg-white p-8 rounded-[2.5rem] border border-stone-100/60 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] space-y-6">
+                        <h2 className="text-2xl font-playfair font-bold text-stone-900 italic border-b border-stone-50 pb-6">Valeur & Inventaire</h2>
 
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Prix (MAD) *</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Prix Actuel (MAD) *</label>
                                 <input
                                     type="number"
                                     required
                                     value={formData.price}
                                     onChange={e => setFormData({ ...formData, price: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all font-bold"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-stone-50 focus:border-stone-200 transition-all font-playfair font-bold text-lg text-stone-900"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Prix soldé (Optionnel)</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Prix Soldé (Optionnel)</label>
                                 <input
                                     type="number"
                                     value={formData.sale_price}
                                     onChange={e => setFormData({ ...formData, sale_price: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all text-stone-500 font-bold"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-amber-50 focus:border-amber-200 transition-all font-playfair font-bold text-lg text-amber-600"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-1">Quantité en stock *</label>
+                                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-stone-400 mb-3">Unités Disponibles *</label>
                                 <input
                                     type="number"
                                     required
                                     value={formData.stock}
                                     onChange={e => setFormData({ ...formData, stock: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl outline-none focus:ring-2 focus:ring-stone-900 transition-all font-medium"
+                                    className="w-full px-6 py-4 bg-stone-50/50 border border-stone-100 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-emerald-50 focus:border-emerald-200 transition-all font-bold text-stone-900"
                                 />
                             </div>
                         </div>
@@ -627,16 +630,16 @@ export default function EditProductPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-stone-900 text-white py-4 rounded-2xl font-bold hover:bg-stone-800 transition-all shadow-lg shadow-stone-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                        className="w-full bg-stone-900 text-white py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-stone-800 transition-all shadow-xl shadow-stone-200 flex items-center justify-center gap-3 disabled:opacity-50 group"
                     >
-                        {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Save className="w-6 h-6" />}
-                        Mettre à jour le produit
+                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+                        {loading ? 'Sauvegarde en cours...' : 'Sauvegarder les modifications'}
                     </button>
 
                     {error && (
-                        <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 text-red-600 text-sm">
-                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                            {error}
+                        <div className="p-6 bg-red-50/80 border border-red-100 rounded-2xl flex items-center gap-4 text-red-600 font-bold shadow-sm">
+                            <AlertCircle className="w-6 h-6 flex-shrink-0" />
+                            <span className="text-sm">{error}</span>
                         </div>
                     )}
                 </div>

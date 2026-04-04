@@ -140,8 +140,8 @@ export default function AdminOrdersPage() {
 
             {/* Main Table Card */}
             <div className="bg-white rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] border border-stone-100/60 overflow-hidden">
-                <div className="px-8 py-6 border-b border-stone-50 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-4 w-full md:w-auto">
+                <div className="px-8 py-6 border-b border-stone-50 flex flex-col md:flex-row justify-between items-center gap-4 print:py-0 print:border-none">
+                    <div className="flex items-center gap-4 w-full md:w-auto no-print print:hidden">
                         <div className="relative flex-1 md:w-80">
                             <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-300" size={18} />
                             <input 
@@ -154,9 +154,9 @@ export default function AdminOrdersPage() {
                             <Filter size={18} />
                         </button>
                     </div>
-                    <button className="flex items-center gap-3 bg-stone-900 text-white px-6 py-3 rounded-2xl font-bold text-xs hover:bg-stone-800 transition-all">
+                    <button onClick={() => window.print()} className="flex items-center gap-3 bg-stone-900 text-white px-6 py-3 rounded-2xl font-bold text-xs hover:bg-stone-800 transition-all no-print print:hidden">
                         <Download size={16} />
-                        Exporter CSV
+                        Exporter PDF
                     </button>
                 </div>
 
@@ -168,7 +168,7 @@ export default function AdminOrdersPage() {
                                 <th className="px-8 py-5">Client d'Exception</th>
                                 <th className="px-8 py-5">Montant Acquisition</th>
                                 <th className="px-8 py-5">Statut Actuel</th>
-                                <th className="px-8 py-5 text-right">Actions</th>
+                                <th className="px-8 py-5 text-right print:hidden">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
@@ -219,22 +219,27 @@ export default function AdminOrdersPage() {
                                                             Sync...
                                                         </div>
                                                     ) : (
-                                                        <select
-                                                            value={order.status}
-                                                            onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                                                            className={`w-full appearance-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer outline-none transition-all ${statusInfo.color} border border-transparent hover:border-current/20`}
-                                                        >
-                                                            {Object.entries(orderStatusMap).map(([key, value]) => (
-                                                                <option key={key} value={key} className="bg-white text-stone-900 font-medium normal-case">
-                                                                    {value.label}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                        <>
+                                                            <select
+                                                                value={order.status}
+                                                                onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                                                                className={`w-full appearance-none px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest cursor-pointer outline-none transition-all print:hidden ${statusInfo.color} border border-transparent hover:border-current/20`}
+                                                            >
+                                                                {Object.entries(orderStatusMap).map(([key, value]) => (
+                                                                    <option key={key} value={key} className="bg-white text-stone-900 font-medium normal-case">
+                                                                        {value.label}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                            <div className={`hidden print:flex w-fit px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${statusInfo.color}`}>
+                                                                {statusInfo.label}
+                                                            </div>
+                                                        </>
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <td className="px-8 py-6 text-right print:hidden">
+                                                <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity no-print print:hidden">
                                                     <button
                                                         onClick={() => handleViewDetails(order.id)}
                                                         className="w-10 h-10 rounded-xl bg-white border border-stone-100 text-stone-400 hover:text-stone-900 hover:border-stone-900 hover:shadow-lg transition-all flex items-center justify-center"
@@ -261,7 +266,7 @@ export default function AdminOrdersPage() {
 
                 {/* Pagination */}
                 {!loading && pagination?.last_page > 1 && (
-                    <div className="px-8 py-6 bg-stone-50/50 border-t border-stone-50 flex items-center justify-between">
+                    <div className="px-8 py-6 bg-stone-50/50 border-t border-stone-50 flex items-center justify-between no-print print:hidden">
                         <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest">
                             Page <span className="text-stone-900">{pagination.current_page}</span> sur <span className="text-stone-900">{pagination.last_page}</span> — <span className="text-stone-900 font-serif italic">{pagination.total} commandes</span>
                         </div>
@@ -289,9 +294,9 @@ export default function AdminOrdersPage() {
 
             {/* Modal de Détails (Inspiré de votre Checkout Success) */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
-                    <div className="absolute inset-0 bg-stone-950/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)} />
-                    <div className="relative bg-[#FDFCFB] w-full max-w-5xl max-h-[92vh] rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col border border-stone-200/50">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300 print:absolute print:inset-0 print:p-0 print:bg-white">
+                    <div className="absolute inset-0 bg-stone-950/80 backdrop-blur-md no-print" onClick={() => setIsModalOpen(false)} />
+                    <div className="relative bg-[#FDFCFB] w-full max-w-5xl max-h-[92vh] print:max-h-none rounded-[3.5rem] print:rounded-none shadow-2xl overflow-hidden print:overflow-visible flex flex-col border border-stone-200/50 print:border-none print:shadow-none">
                         {/* Modal Header */}
                         <div className="px-12 py-10 border-b border-stone-100 flex items-center justify-between bg-white relative">
                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/20 via-primary to-primary/20" />
@@ -473,11 +478,49 @@ export default function AdminOrdersPage() {
                     border-radius: 10px;
                 }
                 @media print {
-                    .no-print, header, footer, nav, button, aside {
+                    aside, header, nav, footer, .no-print, button, select, .cursor-pointer {
                         display: none !important;
                     }
-                    body {
+                    body, html {
+                        margin: 0 !important;
+                        padding: 0 !important;
                         background: white !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    main {
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        overflow: visible !important;
+                    }
+                    /* Ensure modal covers everything during print */
+                    .fixed {
+                        position: absolute !important;
+                        height: auto !important;
+                    }
+                    .max-h-[92vh] {
+                        max-height: none !important;
+                    }
+                    /* Ensure table doesn't get cut */
+                    table {
+                        page-break-inside: auto;
+                    }
+                    tr {
+                        page-break-inside: avoid;
+                        page-break-after: auto;
+                    }
+                    thead {
+                        display: table-header-group;
+                    }
+                    /* Images must be fully visible */
+                    img {
+                        max-width: 100% !important;
+                    }
+                    .shadow-2xl, .shadow-xl, .shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)], .shadow-[0_20px_80px_rgba(0,0,0,0.03)] {
+                        box-shadow: none !important;
+                        border: 1px solid #f5f5f4 !important;
                     }
                 }
             `}</style>

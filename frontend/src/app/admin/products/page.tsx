@@ -118,100 +118,113 @@ export default function AdminProductsPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-8 pb-12 animate-in fade-in duration-700">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-stone-900 tracking-tight">Produits</h1>
-                    <p className="text-stone-500 text-sm">Gérez votre catalogue de tapis.</p>
+                    <h1 className="text-4xl font-playfair font-bold text-stone-900 tracking-tight italic flex items-center gap-4">
+                        Catalogue & Pièces
+                        {pagination?.total > 0 && (
+                            <span className="flex items-center justify-center w-8 h-8 bg-emerald-50 text-emerald-600 rounded-xl text-sm font-sans font-bold not-italic">
+                                {pagination.total}
+                            </span>
+                        )}
+                    </h1>
+                    <p className="text-stone-500 font-medium mt-2">Gérez l'inventaire de vos créations artisanales.</p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                    <div className="relative w-full sm:w-auto">
-                        <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
+                    <div className="relative flex-1 sm:flex-none">
+                        <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
                         <input
                             type="text"
-                            placeholder="Rechercher par nom..."
+                            placeholder="Rechercher une pièce..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900 w-full sm:w-64"
+                            className="bg-white border border-stone-100 rounded-2xl py-3.5 pl-12 pr-4 text-[13px] font-bold text-stone-900 outline-none focus:ring-4 focus:ring-stone-50 transition-all w-full sm:w-72 shadow-sm"
                         />
                     </div>
                     <select
                         value={categoryId}
                         onChange={(e) => {
                             setCategoryId(e.target.value);
-                            setPage(1); // Reset page on category change
+                            setPage(1);
                         }}
-                        className="py-2.5 px-4 bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900 text-stone-600 w-full sm:w-auto outline-none"
+                        className="bg-white border border-stone-100 rounded-2xl py-3.5 px-6 text-[11px] font-black uppercase tracking-widest text-stone-500 outline-none focus:ring-4 focus:ring-stone-50 transition-all w-full sm:w-auto shadow-sm appearance-none cursor-pointer"
                     >
-                        <option value="">Toutes les catégories</option>
+                        <option value="">Famille de Tapis</option>
                         {categories.map((cat: any) => (
                             <option key={cat.id} value={cat.id}>
                                 {cat.name}
                             </option>
                         ))}
                     </select>
-                    <Link
-                        href="/admin/products/create"
-                        className="bg-stone-900 text-white px-4 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-stone-800 transition-colors w-full sm:w-auto"
-                    >
-                        <Plus className="w-5 h-5" />
-                        Nouveau Produit
-                    </Link>
-                    {selectedProducts.length > 0 && (
+                    {selectedProducts.length > 0 ? (
                         <button
                             onClick={handleBulkDelete}
                             disabled={isDeletingBulk}
-                            className="bg-red-50 text-red-600 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-100 transition-colors w-full sm:w-auto"
+                            className="bg-red-50 text-red-600 px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-red-100 transition-all w-full sm:w-auto flex-1 shadow-sm"
                         >
-                            {isDeletingBulk ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                            {isDeletingBulk ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                             Supprimer ({selectedProducts.length})
                         </button>
+                    ) : (
+                        <Link
+                            href="/admin/products/create"
+                            className="bg-stone-900 text-white px-6 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-stone-800 transition-all shadow-xl shadow-stone-200 group w-full sm:w-auto flex-1"
+                        >
+                            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
+                            Nouveau Produit
+                        </Link>
                     )}
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden min-h-[400px]">
+            {/* Main Table Wrapper */}
+            <div className="bg-white rounded-[2.5rem] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] border border-stone-100/60 overflow-hidden relative min-h-[500px]">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-stone-50 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+                
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center h-[400px]">
-                        <Loader2 className="w-8 h-8 animate-spin text-stone-400 mb-2" />
-                        <p className="text-stone-400 text-sm">Chargement des produits...</p>
+                    <div className="flex flex-col items-center justify-center py-32 relative z-10 h-full min-h-[400px]">
+                        <div className="w-16 h-16 bg-stone-50 rounded-2xl flex items-center justify-center mb-4">
+                            <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
+                        </div>
+                        <p className="text-stone-400 text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Recherche des pièces en cours...</p>
                     </div>
                 ) : (
                     <>
-                        <div className="overflow-x-auto">
+                        <div className="relative z-10 overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-stone-50 text-stone-500 text-xs font-bold uppercase tracking-wider">
-                                        <th className="px-6 py-4 w-10">
+                                    <tr className="bg-stone-50/50 text-stone-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                                        <th className="px-8 py-5 w-10">
                                             <input 
                                                 type="checkbox" 
-                                                className="rounded border-stone-300 text-stone-900 focus:ring-stone-900"
+                                                className="rounded-md border-stone-300 text-stone-900 focus:ring-stone-900 w-4 h-4"
                                                 checked={products.length > 0 && selectedProducts.length === products.length}
                                                 onChange={handleSelectAll}
                                             />
                                         </th>
-                                        <th className="px-6 py-4">Produit</th>
-                                        <th className="px-6 py-4 text-center">Catégorie</th>
-                                        <th className="px-6 py-4 text-center">Prix</th>
-                                        <th className="px-6 py-4 text-center">Stock</th>
-                                        <th className="px-6 py-4 text-center">Statut</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
+                                        <th className="px-8 py-5">Pièce Artisanale</th>
+                                        <th className="px-8 py-5 text-center">Collection</th>
+                                        <th className="px-8 py-5 text-center">Acquisition</th>
+                                        <th className="px-8 py-5 text-center">Stock</th>
+                                        <th className="px-8 py-5 text-center">Statut</th>
+                                        <th className="px-8 py-5 text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-stone-100">
                                     {products.map((product) => (
-                                        <tr key={product.id} className="hover:bg-stone-50 transition-colors">
-                                            <td className="px-6 py-4">
+                                        <tr key={product.id} className="group hover:bg-stone-50/50 transition-all duration-300">
+                                            <td className="px-8 py-6">
                                                 <input 
                                                     type="checkbox" 
-                                                    className="rounded border-stone-300 text-stone-900 focus:ring-stone-900"
+                                                    className="rounded-md border-stone-300 text-stone-900 focus:ring-stone-900 w-4 h-4"
                                                     checked={selectedProducts.includes(product.id)}
                                                     onChange={() => handleSelectProduct(product.id)}
                                                 />
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded bg-stone-100 flex-shrink-0 overflow-hidden border border-stone-200">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-5">
+                                                    <div className="w-14 h-14 rounded-[1.25rem] bg-stone-50 flex-shrink-0 overflow-hidden border border-stone-100/50 shadow-sm group-hover:scale-105 transition-transform">
                                                         {product.images?.[0] ? (
                                                             <img
                                                                 src={getImageUrl(product.images[0].image_path)}
@@ -219,55 +232,67 @@ export default function AdminProductsPage() {
                                                                 className="w-full h-full object-cover"
                                                             />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-[10px] text-stone-400 font-bold bg-stone-50">
-                                                                NO IMG
+                                                            <div className="w-full h-full flex items-center justify-center text-[8px] text-stone-400 font-bold bg-stone-50 uppercase tracking-widest">
+                                                                No Img
                                                             </div>
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <div className="text-sm font-bold text-stone-900">{product.name}</div>
-                                                        <div className="text-xs text-stone-400">SKU: {product.id}</div>
+                                                        <div className="text-sm font-bold text-stone-900 group-hover:text-amber-600 transition-colors uppercase tracking-tight">{product.name}</div>
+                                                        <div className="text-[10px] font-mono text-stone-400 mt-1 uppercase">SKU: {product.id}</div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-xs font-medium bg-stone-100 text-stone-600 px-2 py-1 rounded">
-                                                    {product.category?.name || 'N/A'}
+                                            <td className="px-8 py-6 text-center">
+                                                <span className="text-[10px] font-black tracking-widest bg-stone-50 border border-stone-100 text-stone-600 px-3 py-1.5 rounded-lg uppercase inline-block">
+                                                    {product.category?.name || 'Globale'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-center font-bold text-stone-900 text-sm">
-                                                {product.price} MAD
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className={`text-sm font-medium ${product.stock > 0 ? 'text-stone-600' : 'text-red-500 font-bold'}`}>
-                                                    {product.stock}
+                                            <td className="px-8 py-6 text-center">
+                                                <span className="font-playfair font-bold text-stone-900 text-[15px] italic">
+                                                    {Number(product.price).toLocaleString('fr-FR')} <span className="font-sans text-[10px] uppercase font-black tracking-widest text-stone-400 not-italic">MAD</span>
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${product.status === 'active' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                                                    {product.status === 'active' ? 'Actif' : 'Inactif'}
-                                                </span>
+                                            <td className="px-8 py-6 text-center">
+                                                {product.stock > 10 ? (
+                                                    <span className="text-[11px] font-black text-stone-600">{product.stock} PIÈCES</span>
+                                                ) : product.stock > 0 ? (
+                                                    <span className="text-[11px] font-black text-amber-500">{product.stock} RESTANT</span>
+                                                ) : (
+                                                    <span className="text-[11px] font-black text-red-500 italic block">ÉPUISÉ</span>
+                                                )}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center justify-end gap-2">
+                                            <td className="px-8 py-6 text-center">
+                                                <div className="flex items-center justify-center">
+                                                    <div className={`w-2 h-2 rounded-full mr-2 ${product.status === 'active' ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'bg-red-400'}`} />
+                                                    <span className={`text-[10px] font-black tracking-widest uppercase ${product.status === 'active' ? 'text-emerald-700' : 'text-red-700'}`}>
+                                                        {product.status === 'active' ? 'En Ligne' : 'Masqué'}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <Link
                                                         href={`/product/${product.slug}`}
                                                         target="_blank"
-                                                        className="p-2 text-stone-400 hover:text-stone-900 transition-colors"
+                                                        className="w-10 h-10 rounded-xl bg-white border border-stone-100 text-stone-400 hover:text-stone-900 hover:border-stone-900 hover:shadow-lg transition-all flex items-center justify-center"
+                                                        title="Aperçu public"
                                                     >
-                                                        <ExternalLink className="w-4 h-4" />
+                                                        <ExternalLink size={16} />
                                                     </Link>
                                                     <Link
                                                         href={`/admin/products/${product.id}/edit`}
-                                                        className="p-2 text-stone-400 hover:text-stone-900 transition-colors"
+                                                        className="w-10 h-10 rounded-xl bg-white border border-stone-100 text-stone-400 hover:text-amber-600 hover:border-amber-200 hover:bg-amber-50 hover:shadow-lg transition-all flex items-center justify-center"
+                                                        title="Modifier"
                                                     >
-                                                        <Pencil className="w-4 h-4" />
+                                                        <Pencil size={16} />
                                                     </Link>
                                                     <button
                                                         onClick={() => handleDelete(product.id)}
-                                                        className="p-2 text-stone-400 hover:text-red-600 transition-colors"
+                                                        className="w-10 h-10 rounded-xl bg-white border border-stone-100 text-stone-300 hover:text-red-500 hover:border-red-100 hover:bg-red-50 hover:shadow-lg transition-all flex items-center justify-center"
+                                                        title="Supprimer définitivement"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        <Trash2 size={16} />
                                                     </button>
                                                 </div>
                                             </td>
@@ -278,30 +303,31 @@ export default function AdminProductsPage() {
                         </div>
 
                         {/* Pagination */}
-                        <div className="px-6 py-4 bg-stone-50 border-t border-stone-200 flex items-center justify-between">
-                            <p className="text-sm text-stone-500">
-                                Affichage de <span className="font-bold">{products.length}</span> sur <span className="font-bold">{pagination?.total}</span> produits
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    disabled={page === 1}
-                                    onClick={() => setPage(page - 1)}
-                                    className="p-2 rounded-lg border border-stone-200 bg-white disabled:opacity-50 hover:bg-stone-50 transition-colors"
-                                >
-                                    <ChevronLeft className="w-5 h-5" />
-                                </button>
-                                <div className="text-sm font-bold text-stone-700 mx-2">
-                                    Page {pagination?.current_page} sur {pagination?.last_page}
+                        {pagination?.last_page > 1 && (
+                            <div className="px-8 py-6 bg-stone-50/50 border-t border-stone-50 flex items-center justify-between">
+                                <div className="text-[10px] font-black text-stone-400 uppercase tracking-widest">
+                                    Page <span className="text-stone-900">{pagination.current_page}</span> sur <span className="text-stone-900">{pagination.last_page}</span>
                                 </div>
-                                <button
-                                    disabled={page === pagination?.last_page}
-                                    onClick={() => setPage(page + 1)}
-                                    className="p-2 rounded-lg border border-stone-200 bg-white disabled:opacity-50 hover:bg-stone-50 transition-colors"
-                                >
-                                    <ChevronRight className="w-5 h-5" />
-                                </button>
+                                <div className="flex gap-3">
+                                    <button
+                                        disabled={page === 1}
+                                        onClick={() => setPage(page - 1)}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-white border border-stone-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-stone-600 disabled:opacity-30 hover:bg-stone-50 transition-all shadow-sm"
+                                    >
+                                        <ChevronLeft size={14} />
+                                        Précédent
+                                    </button>
+                                    <button
+                                        disabled={page === pagination.last_page}
+                                        onClick={() => setPage(page + 1)}
+                                        className="flex items-center gap-2 px-6 py-2.5 bg-white border border-stone-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-stone-900 disabled:opacity-30 hover:bg-stone-50 transition-all shadow-sm"
+                                    >
+                                        Suivant
+                                        <ChevronRight size={14} />
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </>
                 )}
             </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { adminService } from '@/services/admin';
 import { getImageUrl } from '@/services/api';
 import { orderStatusMap } from '@/utils/status';
@@ -22,11 +22,14 @@ import Link from 'next/link';
 export default function AnalyticsPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const pickerRef = useRef<HTMLDivElement>(null);
+
     // Default to current month and year
     const now = new Date();
     const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+    const [pickerYear, setPickerYear] = useState(now.getFullYear());
 
     const fetchStats = async () => {
         setLoading(true);
@@ -44,29 +47,28 @@ export default function AnalyticsPage() {
         fetchStats();
     }, [selectedMonth, selectedYear]);
 
+    // Close picker on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+                setPickerOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handlePickMonth = (month: number) => {
+        setSelectedMonth(month);
+        setSelectedYear(pickerYear);
+        setPickerOpen(false);
+    };
+
     // Top products for the SELECTED month only
     const legends = React.useMemo(() => {
         if (!stats?.monthly_sales?.[0]?.top_products) return [];
         return stats.monthly_sales[0].top_products.slice(0, 4);
     }, [stats]);
-
-    const handlePrevMonth = () => {
-        if (selectedMonth === 1) {
-            setSelectedMonth(12);
-            setSelectedYear(prev => prev - 1);
-        } else {
-            setSelectedMonth(prev => prev - 1);
-        }
-    };
-
-    const handleNextMonth = () => {
-        if (selectedMonth === 12) {
-            setSelectedMonth(1);
-            setSelectedYear(prev => prev + 1);
-        } else {
-            setSelectedMonth(prev => prev + 1);
-        }
-    };
 
     const handleDownloadPDF = () => {
         window.print();
@@ -76,8 +78,7 @@ export default function AnalyticsPage() {
         "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
         "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
     ];
-
-    const years = Array.from({length: 5}, (_, i) => now.getFullYear() - 2 + i);
+    const monthShort = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
 
     if (loading) {
         return (
@@ -137,8 +138,11 @@ export default function AnalyticsPage() {
                 }
             `}</style>
             {/* Header with Glassmorphism Effect & Filters */}
-            <div className="relative p-12 bg-white rounded-[3.5rem] border border-stone-100 shadow-2xl overflow-hidden group">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 group-hover:scale-125 transition-transform duration-1000" />
+            <div className="relative p-12 bg-white rounded-[3.5rem] border border-stone-100 shadow-2xl group">
+                {/* Background effects with overflow hidden */}
+                <div className="absolute inset-0 overflow-hidden rounded-[3.5rem] pointer-events-none">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 group-hover:scale-125 transition-transform duration-1000" />
+                </div>
                 <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-10">
                     <div className="space-y-4">
                         <Link href="/admin" className="inline-flex items-center gap-2 text-stone-400 hover:text-stone-900 transition-colors text-[10px] font-black uppercase tracking-[0.3em] px-5 py-2.5 bg-stone-50 rounded-full no-print">
@@ -159,35 +163,63 @@ export default function AnalyticsPage() {
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-4">
-                        {/* Month/Year Selection Calendar UI */}
-                        <div className="flex items-center gap-2 bg-stone-50 p-2 rounded-[1.75rem] border border-stone-100">
-                            <button onClick={handlePrevMonth} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-stone-900 hover:text-white transition-all text-stone-600">
-                                <ChevronLeft size={18} />
-                            </button>
-                            
-                            <select 
-                                value={selectedMonth}
-                                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                                className="bg-transparent text-sm font-black uppercase tracking-widest px-4 outline-none border-none cursor-pointer text-stone-900 appearance-none text-center"
+                        {/* Custom Month/Year Picker */}
+                        <div className="relative no-print" ref={pickerRef}>
+                            <button
+                                onClick={() => { setPickerOpen(o => !o); setPickerYear(selectedYear); }}
+                                className="flex items-center gap-3 px-6 py-3.5 bg-white border-2 border-stone-100 rounded-2xl hover:border-stone-900 transition-all group shadow-sm"
                             >
-                                {monthNames.map((name, i) => (
-                                    <option key={i} value={i + 1}>{name}</option>
-                                ))}
-                            </select>
+                                <Calendar size={16} className="text-stone-400 group-hover:text-stone-900 transition-colors" />
+                                <span className="text-sm font-black uppercase tracking-widest text-stone-900">
+                                    {monthNames[selectedMonth - 1]} {selectedYear}
+                                </span>
+                                <ChevronRight size={14} className={`text-stone-400 transition-transform duration-300 ${pickerOpen ? 'rotate-90' : ''}`} />
+                            </button>
 
-                            <select 
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                className="bg-transparent text-sm font-black uppercase tracking-widest px-4 outline-none border-none cursor-pointer text-stone-900 appearance-none text-center border-l border-stone-200"
-                            >
-                                {years.map(y => (
-                                    <option key={y} value={y}>{y}</option>
-                                ))}
-                            </select>
-                            
-                            <button onClick={handleNextMonth} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-stone-900 hover:text-white transition-all text-stone-600">
-                                <ChevronRight size={18} />
-                            </button>
+                            {/* Dropdown picker */}
+                            {pickerOpen && (
+                                <div className="absolute top-full mt-3 left-0 z-50 w-72 bg-white border border-stone-100 rounded-[2rem] shadow-2xl shadow-stone-200/80 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                    {/* Year navigation */}
+                                    <div className="flex items-center justify-between px-6 py-5 border-b border-stone-50">
+                                        <button
+                                            onClick={() => setPickerYear(y => y - 1)}
+                                            className="w-9 h-9 rounded-xl bg-stone-50 hover:bg-stone-900 hover:text-white text-stone-600 flex items-center justify-center transition-all"
+                                        >
+                                            <ChevronLeft size={16} />
+                                        </button>
+                                        <span className="text-xl font-playfair font-bold text-stone-900 italic">{pickerYear}</span>
+                                        <button
+                                            onClick={() => setPickerYear(y => y + 1)}
+                                            className="w-9 h-9 rounded-xl bg-stone-50 hover:bg-stone-900 hover:text-white text-stone-600 flex items-center justify-center transition-all"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    </div>
+
+                                    {/* Month grid */}
+                                    <div className="grid grid-cols-4 gap-2 p-4">
+                                        {monthShort.map((m, i) => {
+                                            const isSel = i + 1 === selectedMonth && pickerYear === selectedYear;
+                                            const isCurrent = i + 1 === now.getMonth() + 1 && pickerYear === now.getFullYear();
+                                            return (
+                                                <button
+                                                    key={i}
+                                                    onClick={() => handlePickMonth(i + 1)}
+                                                    className={`py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
+                                                        isSel
+                                                            ? 'bg-stone-900 text-white shadow-lg'
+                                                            : isCurrent
+                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                                            : 'text-stone-500 hover:bg-stone-50 hover:text-stone-900'
+                                                    }`}
+                                                >
+                                                    {m}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <button 
