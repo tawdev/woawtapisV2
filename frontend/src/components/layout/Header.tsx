@@ -100,11 +100,12 @@ export default function Header({ transparent = false }: HeaderProps) {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-12">
-                        {['Accueil', 'Collections', 'Sur Mesure', 'Suivi Commande', 'Contact'].map((item: string) => {
+                        {['Accueil', 'Collections', 'Nos Produits', 'Sur Mesure', 'Suivi Commande', 'Contact'].map((item: string) => {
                             const href = item === 'Accueil' ? '/' :
                                 item === 'Collections' ? '/collections' :
-                                    item === 'Sur Mesure' ? '/sur-mesure' :
-                                        item === 'Suivi Commande' ? '/track-order' : '/contact';
+                                    item === 'Nos Produits' ? '/products' :
+                                        item === 'Sur Mesure' ? '/sur-mesure' :
+                                            item === 'Suivi Commande' ? '/track-order' : '/contact';
                             return (
                                 <Link
                                     key={item}
@@ -265,11 +266,12 @@ export default function Header({ transparent = false }: HeaderProps) {
                         </div>
 
                         <nav className="flex flex-col gap-8 flex-1 overflow-y-auto mt-8">
-                            {['Accueil', 'Collections', 'Sur Mesure', 'Suivi Commande', 'Contact'].map((item: string) => {
+                            {['Accueil', 'Collections', 'Nos Produits', 'Sur Mesure', 'Suivi Commande', 'Contact'].map((item: string) => {
                                 const href = item === 'Accueil' ? '/' :
                                     item === 'Collections' ? '/collections' :
-                                        item === 'Sur Mesure' ? '/sur-mesure' :
-                                            item === 'Suivi Commande' ? '/track-order' : '/contact';
+                                        item === 'Nos Produits' ? '/products' :
+                                            item === 'Sur Mesure' ? '/sur-mesure' :
+                                                item === 'Suivi Commande' ? '/track-order' : '/contact';
                                 return (
                                     <Link
                                         key={item}
