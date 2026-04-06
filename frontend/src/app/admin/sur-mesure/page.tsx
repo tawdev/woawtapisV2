@@ -18,10 +18,35 @@ import {
     Loader2,
     Calendar,
     Ruler,
-    Palette
+    Palette,
+    Sparkles,
+    PenTool
 } from 'lucide-react';
 
 export default function AdminSurMesurePage() {
+    // Print styles
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @media print {
+                body * { visibility: hidden; }
+                .modal-print-content, .modal-print-content * { visibility: visible; }
+                .modal-print-content { 
+                    position: absolute; 
+                    left: 0; 
+                    top: 0; 
+                    width: 100%;
+                    padding: 0 !important;
+                    margin: 0 !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                }
+                .no-print { display: none !important; }
+            }
+        `;
+        document.head.appendChild(style);
+        return () => { document.head.removeChild(style); };
+    }, []);
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -58,13 +83,27 @@ export default function AdminSurMesurePage() {
         const lines = msg.split('\n');
         const data: any = {};
         lines.forEach(line => {
-            if (line.startsWith('Style: ')) data.style = line.replace('Style: ', '');
+            if (line.startsWith('Style: ')) data.style = line.replace('Style: ', '').replace(' (IMAGE PERSONNALISÉE FOURNIE)', '');
             if (line.startsWith('Dimensions: ')) data.dimensions = line.replace('Dimensions: ', '');
             if (line.startsWith('Teinte: ')) data.color = line.replace('Teinte: ', '');
             if (line.startsWith('Total estimé: ')) data.price = line.replace('Total estimé: ', '');
             if (line.startsWith('Notes: ')) data.notes = line.replace('Notes: ', '');
         });
         return data;
+    };
+
+    const getStyleImage = (request: any) => {
+        if (request.style_image) return request.style_image;
+        
+        const details = parseMessage(request.message);
+        const styleName = details.style?.toLowerCase() || '';
+        
+        if (styleName.includes('beni')) return '/images/textures/beni.png';
+        if (styleName.includes('kilim')) return '/images/textures/kilim.png';
+        if (styleName.includes('vintage') || styleName.includes('azilal')) return '/images/inspiration/vintage_azilal.png';
+        if (styleName.includes('contemporain') || styleName.includes('moderne')) return '/images/inspiration/dining_modern.png';
+        
+        return null; // Fallback to icon
     };
 
     const filteredRequests = requests.filter(req => 
@@ -144,10 +183,23 @@ export default function AdminSurMesurePage() {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="space-y-1">
-                                                    <div className="text-sm font-bold text-stone-700">{details.style || '—'}</div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Palette size={10} className="text-amber-400" />
-                                                        <span className="text-[10px] font-medium text-stone-400 uppercase tracking-widest">{details.color || '—'}</span>
+                                                    <div className="flex items-center gap-4">
+                                                        {getStyleImage(req) ? (
+                                                            <div className="w-12 h-12 rounded-xl overflow-hidden border border-stone-100 shadow-sm shrink-0 bg-stone-50">
+                                                                <img src={getStyleImage(req)} alt="style visual" className="w-full h-full object-cover" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shrink-0 ${details.style?.includes('Inspiration') ? 'bg-amber-50 text-amber-500 border-amber-100' : 'bg-stone-50 text-stone-300 border-stone-100'}`}>
+                                                                {details.style?.includes('Inspiration') ? <PenTool size={20} /> : <Sparkles size={20} />}
+                                                            </div>
+                                                        )}
+                                                        <div>
+                                                            <div className="text-sm font-bold text-stone-700 uppercase tracking-tight">{details.style || '—'}</div>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <Palette size={10} className="text-amber-400" />
+                                                                <span className="text-[10px] font-medium text-stone-400 uppercase tracking-widest">{details.color || '—'}</span>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -217,8 +269,8 @@ export default function AdminSurMesurePage() {
             {/* Detail Modal Overlay */}
             {selectedRequest && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
-                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-md" onClick={() => setSelectedRequest(null)} />
-                    <div className="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col border border-stone-200/50">
+                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-md no-print" onClick={() => setSelectedRequest(null)} />
+                    <div className="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col border border-stone-200/50 modal-print-content">
                         {/* Modal Header */}
                         <div className="px-12 py-10 border-b border-stone-50 flex items-center justify-between bg-white/50 backdrop-blur-xl sticky top-0 z-20">
                             <div className="flex items-center gap-6">
@@ -232,7 +284,7 @@ export default function AdminSurMesurePage() {
                             </div>
                             <button
                                 onClick={() => setSelectedRequest(null)}
-                                className="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-900 hover:bg-white transition-all shadow-sm"
+                                className="w-12 h-12 rounded-2xl bg-stone-50 border border-stone-100 flex items-center justify-center text-stone-400 hover:text-stone-900 hover:bg-white transition-all shadow-sm no-print"
                             >
                                 <XCircle size={24} />
                             </button>
@@ -292,22 +344,61 @@ export default function AdminSurMesurePage() {
                                 </div>
 
                                 <div className="space-y-8">
-                                    <h3 className="text-xl font-playfair font-bold text-stone-900 italic border-b border-stone-100 pb-4">Notes du Client</h3>
-                                    <div className="p-8 bg-amber-50/30 rounded-[2.5rem] border border-stone-100/50 min-h-[150px] relative">
-                                        <div className="absolute top-6 left-6 text-amber-200/50 select-none">
-                                            <Layers size={40} />
+                                    <h3 className="text-xl font-playfair font-bold text-stone-900 italic border-b border-stone-100 pb-4">Référence Visuelle</h3>
+                                    {getStyleImage(selectedRequest) ? (
+                                        <div className="rounded-[2.5rem] border border-stone-100 overflow-hidden shadow-2xl bg-stone-50">
+                                            <img src={getStyleImage(selectedRequest)} alt="style visual" className="w-full h-auto object-cover hover:scale-105 transition-transform duration-700 max-h-[400px]" />
+                                            <div className="p-6 bg-stone-900 text-white text-[9px] font-black uppercase tracking-widest text-center">
+                                                {selectedRequest.style_image ? "Visuel de d'inspiration client" : "Référence du style sélectionné"}
+                                            </div>
                                         </div>
-                                        <p className="text-stone-600 leading-relaxed text-sm relative z-10 font-medium whitespace-pre-wrap italic">
-                                            "{parseMessage(selectedRequest.message).notes || 'Aucune consigne particulière ajoutée.'}"
-                                        </p>
-                                    </div>
+                                    ) : (
+                                        <div className="p-8 bg-amber-50/30 rounded-[2.5rem] border border-stone-100/50 min-h-[150px] relative">
+                                            <div className="absolute top-6 left-6 text-amber-200/50 select-none">
+                                                <Layers size={40} />
+                                            </div>
+                                            <p className="text-stone-600 leading-relaxed text-sm relative z-10 font-medium whitespace-pre-wrap italic text-center">
+                                                "{parseMessage(selectedRequest.message).notes || 'Aucune consigne particulière ajoutée.'}"
+                                            </p>
+                                        </div>
+                                    )}
+                                    {selectedRequest.style_image && parseMessage(selectedRequest.message).notes && (
+                                        <div className="p-8 bg-stone-50 rounded-[2rem] border border-stone-100">
+                                            <p className="text-stone-600 text-sm font-medium italic">"{parseMessage(selectedRequest.message).notes}"</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="px-12 py-8 bg-stone-900 flex flex-col sm:flex-row items-center justify-between gap-6">
-                            <p className="text-[10px] font-black uppercase text-stone-400 tracking-[0.2em]">Archivage ou réponse requise sous 24h</p>
+                        <div className="px-12 py-8 bg-stone-900 flex flex-col sm:flex-row items-center justify-between gap-6 no-print">
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={() => window.print()}
+                                    className="px-6 py-3.5 bg-stone-800 text-stone-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-white hover:bg-stone-700 transition-all flex items-center gap-3 border border-stone-700/50"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Fiche Atelier
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        if (confirm('Voulez-vous archiver (supprimer) cette demande définitivement ?')) {
+                                            try {
+                                                await adminService.deleteMessage(selectedRequest.id);
+                                                setSelectedRequest(null);
+                                                fetchRequests();
+                                            } catch (err) {
+                                                alert('Erreur lors de l’archivage');
+                                            }
+                                        }
+                                    }}
+                                    className="px-6 py-3.5 bg-stone-800 text-rose-400 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:text-white hover:bg-rose-900/50 transition-all flex items-center gap-3 border border-rose-900/20"
+                                >
+                                    <XCircle className="w-4 h-4" />
+                                    Archiver
+                                </button>
+                            </div>
                             <div className="flex gap-4">
                                 <a
                                     href={`mailto:${selectedRequest.email}?subject=RE: ${selectedRequest.subject}`}
@@ -323,7 +414,7 @@ export default function AdminSurMesurePage() {
                                         className="px-8 py-3.5 bg-white text-stone-900 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-stone-50 transition-all shadow-xl flex items-center gap-3"
                                     >
                                         <Phone className="w-4 h-4 text-emerald-500" />
-                                        Contact WhatsApp
+                                        WhatsApp
                                     </a>
                                 )}
                             </div>

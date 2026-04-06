@@ -26,6 +26,7 @@ class ContactController extends Controller
             'phone' => 'nullable|string|max:20',
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
+            'style_image' => 'nullable|string',
         ]);
 
         $contact = \App\Models\ContactMessage::create($validated);

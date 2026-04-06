@@ -2,6 +2,7 @@
 
 import { FaInstagram, FaPinterestP, FaFacebookF, FaTiktok } from 'react-icons/fa6';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { CheckCircle2, Loader2, Mail, MapPin, Phone, ArrowRight } from 'lucide-react';
 
 const socials = [
@@ -64,12 +65,18 @@ export default function Footer() {
                     <div className="lg:col-span-2 space-y-8">
                         <h4 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary">Maison</h4>
                         <ul className="space-y-4">
-                            {['Nos Tapis', 'Sur Mesure', 'Collections', 'À Propos', 'Le Journal'].map((item) => (
-                                <li key={item}>
-                                    <a href="#" className="text-stone-400 hover:text-white text-xs uppercase tracking-widest font-black transition-all duration-300 flex items-center gap-3 group">
+                            {[
+                                { name: 'Nos Tapis', href: '/products' },
+                                { name: 'Sur Mesure', href: '/sur-mesure' },
+                                { name: 'Collections', href: '/collections' },
+                                { name: 'À Propos', href: '/a-propos' },
+                                { name: 'Le Journal', href: '/blog' }
+                            ].map((item) => (
+                                <li key={item.name}>
+                                    <Link href={item.href} className="text-stone-400 hover:text-white text-xs uppercase tracking-widest font-black transition-all duration-300 flex items-center gap-3 group">
                                         <div className="w-1.5 h-1.5 rounded-full bg-primary scale-0 group-hover:scale-100 transition-transform" />
-                                        {item}
-                                    </a>
+                                        {item.name}
+                                    </Link>
                                 </li>
                             ))}
                         </ul>

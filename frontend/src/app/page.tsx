@@ -60,16 +60,6 @@ export default function Home() {
       ]
     },
     {
-      id: "iran",
-      title: "Iran",
-      desc: "La quintessence de l'art persan. Médaillons floraux et tissage millénaire.",
-      img: "/images/collection_iran.png",
-      options: [
-        { label: "En Stock", desc: "Authentiques tapis persans disponibles immédiatement.", catId: "l-iran-on-stock", type: "stock" },
-        { label: "Vintage", desc: "Tapis anciens persans d'époque, chargés d'histoire.", catId: "liran-vintage", type: "vintage" }
-      ]
-    },
-    {
       id: "turc",
       title: "Turc",
       desc: "L'héritage ottoman revisité. Motifs de tulipes et arabesques en laine noble.",
@@ -77,6 +67,16 @@ export default function Home() {
       options: [
         { label: "En Stock", desc: "Authentiques tapis turcs disponibles pour une livraison rapide.", catId: "turc-on-stock", type: "stock" },
         { label: "Vintage", desc: "Pièces ottomanes anciennes d'une rareté incomparable.", catId: "turc-vintage", type: "vintage" }
+      ]
+    },
+    {
+      id: "iran",
+      title: "Iran",
+      desc: "La quintessence de l'art persan. Médaillons floraux et tissage millénaire.",
+      img: "/images/collection_iran.png",
+      options: [
+        { label: "En Stock", desc: "Authentiques tapis persans disponibles immédiatement.", catId: "l-iran-on-stock", type: "stock" },
+        { label: "Vintage", desc: "Tapis anciens persans d'époque, chargés d'histoire.", catId: "liran-vintage", type: "vintage" }
       ]
     }
   ];
@@ -117,8 +117,44 @@ export default function Home() {
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await productService.getFeatured();
-        setFeaturedProducts(data);
+        // Fetch all products to ensure we can find the specific ones requested
+        const res = await productService.getAll({ per_page: 100 });
+        const allProducts = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        
+        // Define the 4 target products by name keywords
+        const targets = [
+          { key: 'marocain', term: 'traditionnel', index: 0 },
+          { key: 'moderne', term: '', index: 1, exclude: 'abstrait' },
+          { key: 'turc', term: 'ushak', index: 2, alt: 'hereke' },
+          { key: 'iran', term: 'traditionnel', index: 3 }
+        ];
+
+        const selected: any[] = [];
+        
+        targets.forEach(target => {
+          const match = allProducts.find((p: any) => {
+            const name = p.name.toLowerCase();
+            const mainMatch = name.includes(target.key);
+            const secondaryMatch = target.term ? name.includes(target.term) : true;
+            const altMatch = target.alt ? name.includes(target.alt) : false;
+            const notExcluded = target.exclude ? !name.includes(target.exclude) : true;
+            
+            return mainMatch && (secondaryMatch || altMatch) && notExcluded;
+          });
+          if (match) selected.push(match);
+        });
+
+        // If we didn't find all 4, fill with original featured products
+        if (selected.length < 4) {
+             const featured = await productService.getFeatured();
+             featured.forEach((p: any) => {
+                 if (selected.length < 4 && !selected.find(s => s.id === p.id)) {
+                     selected.push(p);
+                 }
+             });
+        }
+        
+        setFeaturedProducts(selected.slice(0, 4));
       } catch (error) {
         console.error("Failed to load featured products:", error);
       } finally {
