@@ -18,7 +18,8 @@ import {
     ChevronRight,
     FileText,
     Users,
-    TableProperties
+    TableProperties,
+    Layers
 } from 'lucide-react';
 import Link from 'next/link';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
@@ -318,14 +319,6 @@ export default function AnalyticsPage() {
                         <TrendingUp className="text-primary" size={24} />
                         <h2 className="text-2xl font-playfair font-bold text-stone-900 italic">Best-Sellers de {monthNames[selectedMonth - 1]}</h2>
                     </div>
-                    {currentMonthData && (
-                        <div className="hidden sm:flex px-6 py-3 bg-stone-50 border border-stone-100 rounded-2xl items-center gap-3">
-                            <div className="text-right">
-                                <p className="text-[8px] font-black text-stone-400 uppercase tracking-widest leading-none">Chiffre d'Affaire Mensuel</p>
-                                <p className="text-lg font-bold text-stone-900">{currentMonthData.total?.toLocaleString()} MAD</p>
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -356,6 +349,55 @@ export default function AnalyticsPage() {
                          <div className="col-span-full py-12 px-6 border-2 border-dashed border-stone-100 rounded-[2.5rem] flex flex-col items-center justify-center text-stone-300">
                             <History size={40} className="mb-4 opacity-50" />
                             <p className="text-xs font-black uppercase tracking-[0.3em]">Aucune donnée sur les ventes</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Categories of the MONTH */}
+            <div className="space-y-8">
+                <div className="flex items-center gap-4 px-4">
+                    <Layers className="text-primary" size={24} />
+                    <h2 className="text-2xl font-playfair font-bold text-stone-900 italic">Meilleures Catégories</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {currentMonthData?.top_categories?.length > 0 ? currentMonthData.top_categories.map((c: any, i: number) => {
+                        const maxRev = Math.max(...currentMonthData.top_categories.map((cat: any) => cat.revenue)) || 1;
+                        const width = (c.revenue / maxRev) * 100;
+                        return (
+                            <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-500 group relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-stone-50 rounded-bl-full -mr-16 -mt-16 group-hover:bg-primary/5 transition-colors duration-700" />
+                                <div className="relative z-10 space-y-6">
+                                    <div className="flex items-start justify-between">
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-black text-stone-400 uppercase tracking-widest italic">Performance Rayon</span>
+                                            <h4 className="text-xl font-bold text-stone-900 italic">{c.name}</h4>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-xl bg-stone-900 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                                            <BarChart3 size={18} />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-4">
+                                        <div className="flex items-baseline justify-between">
+                                            <p className="text-2xl font-bold text-stone-900">{c.revenue?.toLocaleString()} <span className="text-[10px] font-black text-stone-400 uppercase">MAD</span></p>
+                                            <p className="text-[10px] font-bold text-emerald-600">+{c.sold} Ventes</p>
+                                        </div>
+                                        <div className="h-2 w-full bg-stone-50 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-stone-900 rounded-full group-hover:bg-primary transition-all duration-1000 ease-out" 
+                                                style={{ width: `${width}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    }) : (
+                        <div className="col-span-full py-12 px-6 border-2 border-dashed border-stone-100 rounded-[2.5rem] flex flex-col items-center justify-center text-stone-300 bg-stone-50/50">
+                            <Layers size={40} className="mb-4 opacity-50" />
+                            <p className="text-xs font-black uppercase tracking-[0.3em]">En attente de commandes livrées</p>
                         </div>
                     )}
                 </div>

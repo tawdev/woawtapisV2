@@ -15,12 +15,18 @@ const styles = [
 ];
 
 const colors = [
-  { name: 'Crème', hex: '#FDFCFB' },
-  { name: 'Ocre', hex: '#D2AC67' },
+  { name: 'Crème Naturel', hex: '#FDFCFB' },
+  { name: 'Sable Berbère', hex: '#E6D5C3' },
+  { name: 'Ocre Doré', hex: '#D2AC67' },
+  { name: 'Terracotta', hex: '#BC6C5A' },
   { name: 'Brique', hex: '#A64B2A' },
-  { name: 'Charbon', hex: '#2C2C2C' },
+  { name: 'Rouge Marrakech', hex: '#8B261E' },
+  { name: 'Charbon Profond', hex: '#2C2C2C' },
+  { name: 'Gris Orage', hex: '#6D7278' },
   { name: 'Bleu Nuit', hex: '#1E2B3C' },
+  { name: 'Indigo Beldi', hex: '#2E4B7A' },
   { name: 'Vert Forêt', hex: '#2D3A27' },
+  { name: 'Vert Olive', hex: '#70703C' },
 ];
 
 const steps = ['Style', 'Dimensions', 'Personnalisation', 'Finalisation'];
@@ -39,6 +45,7 @@ export default function SurMesurePage() {
   });
 
   const [priceEstimate, setPriceEstimate] = useState(0);
+  const [customImage, setCustomImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -91,17 +98,18 @@ export default function SurMesurePage() {
     try {
         const leadData = {
             subject: `PROJET SUR MESURE: ${formData.style.name}`,
-            message: `Demande de tapis sur mesure.\nStyle: ${formData.style.name}\nDimensions: ${formData.width}x${formData.length} CM\nTeinte: ${formData.color.name}\nTotal estimé: ${priceEstimate} MAD\nNotes: ${formData.notes.substring(0, 1000)}`,
+            message: `Demande de tapis sur mesure.\nStyle: ${formData.style.name}${customImage ? ' (IMAGE PERSONNALISÉE FOURNIE)' : ''}\nDimensions: ${formData.width}x${formData.length} CM\nTeinte: ${formData.color.name}\nTotal estimé: ${formData.style.id === 'custom' ? 'Sur Devis' : priceEstimate + ' MAD'}\nNotes: ${formData.notes.substring(0, 1000)}`,
             name: formData.name.trim(),
             email: formData.email.trim().toLowerCase(),
-            phone: formData.phone.trim()
+            phone: formData.phone.trim(),
+            style_image: customImage // Sending the base64 image
         };
 
         await contactService.sendMessage(leadData);
         setIsSuccess(true);
 
         const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP || "212607790956";
-        const msg = `Bonjour WOW TAPIS,\n\nJe souhaite initialiser un projet de tapis sur mesure (Inspiration: ${formData.style.name}).\n\n- Dimensions: ${formData.width}x${formData.length} cm\n- Couleur: ${formData.color.name}\n- Prix estimé: ${priceEstimate} MAD\n- Nom: ${formData.name}\n\nMerci de me recontacter pour finaliser.`;
+        const msg = `Bonjour WOW TAPIS,\n\nJe souhaite initialiser un projet de tapis sur mesure (Inspiration: ${formData.style.name}).${customImage ? '\n\n⚠️ J\'ai ajouté ma propre image d\'inspiration.' : ''}\n\n- Dimensions: ${formData.width}x${formData.length} cm\n- Couleur: ${formData.color.name}\n- Prix estimé: ${formData.style.id === 'custom' ? 'Sur Devis' : priceEstimate + ' MAD'}\n- Nom: ${formData.name}\n\nMerci de me recontacter pour finaliser.`;
         window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
 
     } catch (err) {
@@ -167,7 +175,10 @@ export default function SurMesurePage() {
                   <div className="space-y-5">
                     <div className="flex justify-between items-center group">
                       <span className="text-[9px] uppercase tracking-[0.3em] text-stone-500 font-bold">Style</span>
-                      <span className="text-sm font-serif italic text-stone-200">{formData.style.name}</span>
+                      <div className="flex items-center gap-3">
+                        {customImage && <div className="w-6 h-6 rounded-md overflow-hidden"><img src={customImage} alt="preview" className="w-full h-full object-cover" /></div>}
+                        <span className="text-sm font-serif italic text-stone-200">{formData.style.name}</span>
+                      </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-[9px] uppercase tracking-[0.3em] text-stone-500 font-bold">Format</span>
@@ -184,8 +195,10 @@ export default function SurMesurePage() {
                   <div className="pt-8 border-t border-white/10 flex justify-between items-baseline">
                     <span className="text-[9px] uppercase font-black tracking-[0.4em] text-stone-400">Total estimé</span>
                     <div className="text-right">
-                        <span className="text-4xl font-playfair font-black text-primary">{priceEstimate.toLocaleString()}</span>
-                        <span className="text-[10px] font-bold ml-2 opacity-40">MAD</span>
+                        <span className="text-4xl font-playfair font-black text-primary">
+                          {formData.style.id === 'custom' ? 'Sur Devis' : priceEstimate.toLocaleString()}
+                        </span>
+                        {formData.style.id !== 'custom' && <span className="text-[10px] font-bold ml-2 opacity-40">MAD</span>}
                     </div>
                   </div>
                 </div>
@@ -198,11 +211,14 @@ export default function SurMesurePage() {
                   <motion.div key="step-0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-12">
                     <div className="space-y-4">
                       <h2 className="text-4xl font-serif font-bold italic">Choisissez votre univers</h2>
-                      <p className="text-stone-500 font-light">Le style définit la texture, l'épaisseur et l'âme de votre tapis.</p>
+                      <p className="text-stone-500 font-light uppercase tracking-widest text-[10px] font-bold">Le style définit la texture, l'épaisseur et l'âme de votre tapis.</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {styles.map((style) => (
-                        <button key={style.id} onClick={() => setFormData({ ...formData, style })} className={`group relative text-left rounded-3xl overflow-hidden border-2 transition-all duration-700 ${formData.style.id === style.id ? 'border-primary ring-8 ring-primary/5' : 'border-stone-50 hover:border-stone-200'}`}>
+                        <button key={style.id} onClick={() => {
+                          setFormData({ ...formData, style });
+                          setCustomImage(null);
+                        }} className={`group relative text-left rounded-3xl overflow-hidden border-2 transition-all duration-700 ${formData.style.id === style.id && !customImage ? 'border-primary ring-8 ring-primary/5' : 'border-stone-50 hover:border-stone-200'}`}>
                           <div className="aspect-[16/9] overflow-hidden">
                             <img src={style.image} alt={style.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
                           </div>
@@ -211,11 +227,60 @@ export default function SurMesurePage() {
                             <p className="text-stone-400 text-[10px] font-light uppercase tracking-widest">{style.desc}</p>
                             <div className="mt-6 flex items-center justify-between">
                                 <span className="text-[9px] px-4 py-2 bg-stone-50 rounded-full font-black uppercase tracking-widest text-[#1C1917]">Dès {style.price} MAD/m²</span>
-                                {formData.style.id === style.id && <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white"><Check size={16} /></div>}
+                                {formData.style.id === style.id && !customImage && <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white"><Check size={16} /></div>}
                             </div>
                           </div>
                         </button>
                       ))}
+
+                      {/* Custom Style Upload Card */}
+                      <div className={`relative rounded-3xl border-2 transition-all duration-700 overflow-hidden ${customImage ? 'border-primary ring-8 ring-primary/5' : 'border-stone-100 border-dashed hover:border-stone-300'}`}>
+                        <input 
+                          type="file" accept="image/*" id="style-upload" className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setCustomImage(reader.result as string);
+                                setFormData({ ...formData, style: { id: 'custom', name: 'Inspiration Personnelle', price: 1100, image: '', desc: 'Votre propre image de style' } });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                        <label htmlFor="style-upload" className="cursor-pointer block h-full">
+                          {customImage ? (
+                            <div className="h-full flex flex-col">
+                              <div className="aspect-[16/9] overflow-hidden relative">
+                                <img src={customImage} alt="Custom" className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                  <span className="text-white text-[10px] font-black uppercase tracking-widest">Changer l'image</span>
+                                </div>
+                              </div>
+                              <div className="p-6">
+                                <h3 className="text-xl font-bold font-serif italic mb-1">Inspiration Personnelle</h3>
+                                <p className="text-stone-400 text-[10px] font-light uppercase tracking-widest">Basé sur votre propre visuel</p>
+                                <div className="mt-6 flex items-center justify-between">
+                                    <span className="text-[9px] px-4 py-2 bg-stone-50 rounded-full font-black uppercase tracking-widest text-[#1C1917]">Prix après étude</span>
+                                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white"><Check size={16} /></div>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="h-full flex flex-col items-center justify-center p-12 text-center space-y-6 min-h-[300px]">
+                              <div className="w-16 h-16 rounded-2xl bg-stone-50 flex items-center justify-center text-stone-300 group-hover:scale-110 transition-transform">
+                                <PenTool size={32} />
+                              </div>
+                              <div className="space-y-2">
+                                <h3 className="text-lg font-serif italic font-bold">Autre Style ?</h3>
+                                <p className="text-stone-400 text-[10px] uppercase font-black tracking-widest">Téléchargez votre propre image d'inspiration</p>
+                              </div>
+                              <div className="px-6 py-3 bg-stone-900 text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg">Ajouter une photo</div>
+                            </div>
+                          )}
+                        </label>
+                      </div>
                     </div>
                   </motion.div>
                 )}

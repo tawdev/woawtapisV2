@@ -7,44 +7,35 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { categoryService, getImageUrl } from '@/services/api';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Palette, Ruler, History, Compass, Globe } from 'lucide-react';
+import { Sparkles, ArrowRight, Palette, Ruler, History } from 'lucide-react';
 
 const thematicCollections = [
     {
-        id: 'marocain',
-        name: 'Collection Marocaine',
-        desc: 'L\'âme de l\'Atlas à travers des tissages authentiques et des motifs tribaux séculaires.',
-        image: '/images/inspiration/marocain_rug.png',
-        filter: '?category=beni-ourain,azilal',
-        icon: <Sparkles size={16} />,
-        accent: 'amber'
-    },
-    {
-        id: 'moderne',
-        name: 'Design Moderne',
-        desc: 'Une réinterprétation contemporaine où le minimalisme rencontre le confort absolu.',
-        image: '/images/inspiration/dining_modern.png',
-        filter: '?search=moderne',
+        id: 'minimalisme',
+        name: 'Minimalisme Berbère',
+        desc: 'La pureté de la laine naturelle, sublimée par des motifs ancestraux d\'une sobriété absolue.',
+        image: '/images/inspiration/beni_ouarain.png',
+        filter: '?category=beni-ourain&colors=blanc,beige',
         icon: <Ruler size={16} />,
-        accent: 'stone'
-    },
-    {
-        id: 'turc',
-        name: 'Héritage Turc',
-        desc: 'L\'élégance des Kilims et des motifs géométriques d\'Anatolie aux couleurs terreuses.',
-        image: '/images/inspiration/kilim_gallery.png',
-        filter: '?search=turc',
-        icon: <Compass size={16} />,
         accent: 'emerald'
     },
     {
-        id: 'iran',
-        name: 'Trésors d\'Iran',
-        desc: 'Le prestige de l\'Orient et la finesse des détails pour des pièces d\'exception.',
-        image: '/images/inspiration/iran_rug.png',
-        filter: '?search=iran',
-        icon: <Globe size={16} />,
-        accent: 'blue'
+        id: 'eclats',
+        name: 'Éclats de Couleurs',
+        desc: 'L\'expression artistique libre des tisseuses de l\'Atlas, où chaque couleur raconte une émotion.',
+        image: '/images/inspiration/vintage_azilal.png',
+        filter: '?category=azilal&colors=multicolore,rose,bleu',
+        icon: <Palette size={16} />,
+        accent: 'amber'
+    },
+    {
+        id: 'heritage',
+        name: 'Héritage Artisanal',
+        desc: 'Des pièces rares chargées d\'histoire, témoins d\'un savoir-faire préservé depuis des siècles.',
+        image: '/images/inspiration/kilim_gallery.png',
+        filter: '?search=vintage',
+        icon: <History size={16} />,
+        accent: 'stone'
     }
 ];
 
@@ -95,11 +86,11 @@ export default function CollectionsPage() {
                 <div className="mb-44 space-y-16">
                     <div className="flex items-center gap-6">
                         <div className="h-px flex-1 bg-stone-200" />
-                        <h2 className="text-[11px] uppercase font-black tracking-[0.5em] text-stone-400">Collections Signature</h2>
+                        <h2 className="text-[11px] uppercase font-black tracking-[0.5em] text-stone-400">Curations Éditoriales</h2>
                         <div className="h-px flex-1 bg-stone-200" />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {thematicCollections.map((collection, idx) => (
                             <motion.div
                                 key={collection.id}
@@ -107,7 +98,7 @@ export default function CollectionsPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.1 }}
                             >
-                                <Link href={`/products${collection.filter}`} className="group block relative h-[520px] rounded-[2.5rem] overflow-hidden shadow-2xl">
+                                <Link href={`/products${collection.filter}`} className="group block relative h-[600px] rounded-[2.5rem] overflow-hidden shadow-2xl">
                                     <Image src={collection.image} alt={collection.name} fill className="object-cover transition-transform duration-1000 group-hover:scale-110" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/20 to-transparent group-hover:via-stone-900/40 transition-all duration-500" />
                                     
@@ -153,7 +144,19 @@ export default function CollectionsPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                            {categories.map((cat, idx) => {
+                            {categories
+                                .sort((a, b) => {
+                                    const preferredOrder = ['marocain', 'moderne', 'turc', 'iran'];
+                                    const getIndex = (name: string) => preferredOrder.findIndex(term => name.toLowerCase().includes(term));
+                                    const indexA = getIndex(a.name);
+                                    const indexB = getIndex(b.name);
+                                    
+                                    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+                                    if (indexA !== -1) return -1;
+                                    if (indexB !== -1) return 1;
+                                    return 0;
+                                })
+                                .map((cat, idx) => {
                                 // Logic for premium, diverse fallback images based on category name
                                 const getFallbackImage = (name: string) => {
                                     const lowerName = name.toLowerCase();

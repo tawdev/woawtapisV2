@@ -65,7 +65,26 @@ class AdminStatsController extends Controller
                 ->groupBy('order_items.product_id', 'order_items.product_name')
                 ->orderByDesc('total_sold')
                 ->with(['product.primaryImage'])
-                ->take(10) // Increase to 10 for detailed view
+                ->take(10)
+                ->get();
+
+            // Top Categories of that month
+            $topCategories = \App\Models\OrderItem::join('orders', 'order_items.order_id', '=', 'orders.id')
+                ->join('products', 'order_items.product_id', '=', 'products.id')
+                ->join('categories', 'products.category_id', '=', 'categories.id')
+                ->whereMonth('orders.created_at', $date->month)
+                ->whereYear('orders.created_at', $date->year)
+                ->where('orders.status', 'delivered')
+                ->select(
+                    'categories.id', 
+                    'categories.name', 
+                    \Illuminate\Support\Facades\DB::raw('count(order_items.id) as orders_count'),
+                    \Illuminate\Support\Facades\DB::raw('sum(order_items.quantity) as total_sold'),
+                    \Illuminate\Support\Facades\DB::raw('sum(order_items.subtotal) as total_revenue')
+                )
+                ->groupBy('categories.id', 'categories.name')
+                ->orderByDesc('total_revenue')
+                ->take(5)
                 ->get();
 
             $monthlySales[] = [
@@ -79,6 +98,14 @@ class AdminStatsController extends Controller
                         'sold' => (int)$item->total_sold,
                         'image' => $item->product?->primaryImage?->image_path,
                         'product_id' => $item->product_id
+                    ];
+                }),
+                'top_categories' => $topCategories->map(function($item) {
+                    return [
+                        'name' => $item->name,
+                        'orders' => (int)$item->orders_count,
+                        'sold' => (int)$item->total_sold,
+                        'revenue' => (float)$item->total_revenue
                     ];
                 })
             ];
